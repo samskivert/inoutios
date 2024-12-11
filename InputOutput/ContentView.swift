@@ -1,66 +1,42 @@
-//
-//  ContentView.swift
-//  InputOutput
-//
-//  Created by Michael Bayne on 12/11/24.
-//
-
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
+        TabView {
+            JournalView()
+                .tabItem {
+                    Label("Journal", systemImage: "book.closed")
                 }
-                .onDelete(perform: deleteItems)
-            }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
+            ReadView()
+                .tabItem {
+                    Label("Reading", systemImage: "book")
+                }
 
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+            WatchView()
+                .tabItem {
+                    Label("Watching", systemImage: "tv")
+                }
+
+            ListenView()
+                .tabItem {
+                    Label("Listening", systemImage: "headphones")
+                }
+
+            PlayView()
+                .tabItem {
+                    Label("Playing", systemImage: "gamecontroller")
+                }
         }
     }
 }
 
 #Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+  let config = ModelConfiguration(isStoredInMemoryOnly: true)
+  let container = try! ModelContainer(for: ReadItem.self, configurations: config)
+  for item in testReadItems {
+    container.mainContext.insert(item)
+  }
+  return ContentView().modelContainer(container)
 }
