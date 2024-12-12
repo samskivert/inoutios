@@ -43,20 +43,22 @@ struct ReadView: View {
     sort: \ReadItem.started)
   var reading: [ReadItem]
 
-  @Query(filter: #Predicate<ReadItem> { $0.started == nil }, sort: \ReadItem.created)
+  @Query(filter: #Predicate<ReadItem> { $0.started == nil }, sort: \ReadItem.created, order: .reverse)
   var toread: [ReadItem]
 
-  @Query(filter: #Predicate<ReadItem> { $0.completed != nil }, sort: \ReadItem.completed)
+  @Query(filter: #Predicate<ReadItem> { $0.completed != nil }, sort: \ReadItem.completed, order: .reverse)
   var recentlyRead: [ReadItem]
 
   @State private var searchText: String = ""
   @State private var isEditing: ReadItem? = nil
   @State private var showImport :Bool = false
   
+  private var showSearch :Bool { searchText != "" && searchText.count > 1 }
+
   var body: some View {
     NavigationStack {
       List {
-        if !reading.isEmpty && searchText == "" {
+        if !reading.isEmpty && !showSearch {
           readSection("Reading", reading, $isEditing)
         }
         if toread.isEmpty {
@@ -65,13 +67,13 @@ struct ReadView: View {
             systemImage: "doc.text",
             description: Text("You haven't added any items yet.")
           )
-        } else if searchText == "" {
+        } else if !showSearch {
           readSection("To Read", toread, $isEditing)
         }
-        if !recentlyRead.isEmpty && searchText == "" {
+        if !recentlyRead.isEmpty && !showSearch {
           readSection("Recently Read", recentlyRead, $isEditing)
         }
-        if (searchText != "") {
+        if (showSearch) {
           SearchResultsList(search: searchText, editItem: $isEditing)
         }
       }
@@ -108,7 +110,7 @@ struct ReadView: View {
                return
           }
           do {
-            let items = try decoder.decode([ReadItem].self, from: Data(contentsOf: url))
+            let items = try ReadImporter().importItems(Data(contentsOf: url))
             for item in items {
               modelContext.insert(item)
             }

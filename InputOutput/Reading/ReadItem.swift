@@ -13,19 +13,21 @@ enum ReadType: String, Codable, CaseIterable, Identifiable, CustomStringConverti
 
 struct ReadJson: Decodable {
   var id: String
-  var author: String
-  var created: String
+  var author: String?
+  var created: UInt64
   var title: String
   var type: String
-  var tags: [String]
+  var tags: [String]?
   var link: String?
-  var rating: String
+  var rating: String?
   var started :String?
   var completed: String?
+  var recommender: String?
+  var abandoned: Bool?
 }
 
 @Model
-class ReadItem: Identifiable, Consumable, Decodable {
+class ReadItem: Identifiable, Consumable {
   // Item properties
   var id: UUID
   var created: Date
@@ -69,12 +71,6 @@ class ReadItem: Identifiable, Consumable, Decodable {
     self.title = title
     self.author = author
     self.abandoned = abandoned
-  }
-
-  required convenience init(from decoder :Decoder) throws {
-    let json = try ReadJson(from: decoder)
-    let format = ReadType.book
-    self.init(id: UUID(), created: Date(), tags: json.tags, link: json.link, started: nil, completed: nil, rating: .none, recommender: nil, format: format, title: json.title, author: json.author, abandoned: false)
   }
 
   func isProtracted() -> Bool { true }

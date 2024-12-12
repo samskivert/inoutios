@@ -24,7 +24,7 @@ struct ReadItemRow: View {
         Text(item.title).font(.headline)
         HStack {
           item.author.map { Text($0).font(.subheadline) }
-          item.recommender.map { Text("(via: \($0))").font(.subheadline) }
+          item.recommender.map { Text("(via \($0))").font(.subheadline) }
         }
       }.frame(maxWidth: .infinity, alignment: .leading)
       Button(action: {
