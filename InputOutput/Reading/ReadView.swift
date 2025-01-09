@@ -13,21 +13,22 @@ func readSection(
   }
 }
 
-struct SearchResultsList : View {
-  @Query private var searchResults :[ReadItem]
-  private var editItem :Binding<ReadItem?>
+struct SearchResultsList: View {
+  @Query private var searchResults: [ReadItem]
+  private var editItem: Binding<ReadItem?>
 
-  init (search :String, editItem :Binding<ReadItem?>) {
-    _searchResults = Query(filter: #Predicate<ReadItem> { item in
-      item.title.localizedStandardContains(search) ||
-      (item.author?.localizedStandardContains(search) ?? false) ||
-      (item.recommender?.localizedStandardContains(search) ?? false)
-    }, sort: [SortDescriptor(\ReadItem.completed), SortDescriptor(\ReadItem.created)])
+  init(search: String, editItem: Binding<ReadItem?>) {
+    _searchResults = Query(
+      filter: #Predicate<ReadItem> { item in
+        item.title.localizedStandardContains(search)
+          || (item.author?.localizedStandardContains(search) ?? false)
+          || (item.recommender?.localizedStandardContains(search) ?? false)
+      }, sort: [SortDescriptor(\ReadItem.completed), SortDescriptor(\ReadItem.created)])
     self.editItem = editItem
   }
 
   var body: some View {
-    if (searchResults.isEmpty) {
+    if searchResults.isEmpty {
       Text("No matches.")
     } else {
       readSection("Search Results", searchResults, editItem)
@@ -39,21 +40,40 @@ struct ReadView: View {
   @Environment(\.modelContext) var modelContext
 
   @Query(
-    filter: #Predicate<ReadItem> { $0.completed == nil && $0.started != nil },
-    sort: \ReadItem.started)
+    filter: #Predicate<ReadItem> {
+      $0.completed == nil && $0.started != nil
+    },
+    sort: \ReadItem.started
+  )
   var reading: [ReadItem]
 
-  @Query(filter: #Predicate<ReadItem> { $0.started == nil }, sort: \ReadItem.created, order: .reverse)
+  @Query(
+    filter: #Predicate<ReadItem> { $0.started == nil },
+    sort: \ReadItem.created, order: .reverse
+  )
   var toread: [ReadItem]
 
-  @Query(filter: #Predicate<ReadItem> { $0.completed != nil }, sort: \ReadItem.completed, order: .reverse)
+  @Query(
+    filter: #Predicate<ReadItem> { $0.completed != nil },
+    sort: \ReadItem.completed, order: .reverse
+  )
   var recentlyRead: [ReadItem]
 
   @State private var searchText: String = ""
   @State private var isEditing: ReadItem? = nil
-  @State private var showImport :Bool = false
-  
-  private var showSearch :Bool { searchText != "" && searchText.count > 1 }
+  @State private var showImport: Bool = false
+
+  private var showSearch: Bool { searchText != "" && searchText.count > 1 }
+
+  private var completedByYear: [(Int, [ReadItem])] {
+    let calendar = Calendar.current
+    let byyear = Dictionary(
+      grouping: recentlyRead, by: { calendar.component(.year, from: $0.completed!) }
+    )
+    return Array(byyear.keys).sorted(by: { $0 > $1 }).map { year in
+      (year, Array(byyear[year]!))
+    }
+  }
 
   var body: some View {
     NavigationStack {
@@ -71,14 +91,16 @@ struct ReadView: View {
           readSection("To Read", toread, $isEditing)
         }
         if !recentlyRead.isEmpty && !showSearch {
-          readSection("Recently Read", recentlyRead, $isEditing)
+          ForEach(completedByYear, id: \.0) { year, items in
+            readSection("Read in \(year)", items, $isEditing)
+          }
         }
-        if (showSearch) {
+        if showSearch {
           SearchResultsList(search: searchText, editItem: $isEditing)
         }
       }
       .sheet(isPresented: Binding(get: { isEditing != nil }, set: { _ in isEditing = nil })) {
-        ReadItemView(item: isEditing!)
+        ReadItemView(item: isEditing!).padding()
       }
       .toolbar(content: {
         // ToolbarItem(placement: .navigationBarTrailing)
@@ -95,9 +117,9 @@ struct ReadView: View {
           }.accessibilityLabel("Import items from JSON")
         }
       })
-#if os(iOS)
+      #if os(iOS)
       .navigationBarTitleDisplayMode(.inline)
-#endif
+      #endif
       .navigationTitle("Reading")
       .searchable(text: $searchText)
       .fileImporter(isPresented: $showImport, allowedContentTypes: [.json]) { result in
@@ -107,7 +129,7 @@ struct ReadView: View {
           decoder.keyDecodingStrategy = .convertFromSnakeCase
           print("Importing from \(url)...")
           guard url.startAccessingSecurityScopedResource() else {
-               return
+            return
           }
           do {
             let items = try ReadImporter().importItems(Data(contentsOf: url))

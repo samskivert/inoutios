@@ -27,6 +27,19 @@ struct ReadItemRow: View {
           item.recommender.map { Text("(via \($0))").font(.subheadline) }
         }
       }.frame(maxWidth: .infinity, alignment: .leading)
+      item.link.flatMap({ URL(string: $0) }).map { url in
+        Link(destination: url) {
+            Image(systemName: "link").resizable().frame(width: 16, height: 16)
+        }.buttonStyle(PlainButtonStyle()).padding(4)
+      }
+      VStack {
+        item.ratingIcon().map {
+          Text($0)
+        }
+        item.completed.map { when in
+          Text(when, format: .dateTime.day().month()).font(.subheadline)
+        }
+      }
       Button(action: {
         if (item.started == nil) {
           item.started = .now
@@ -46,5 +59,5 @@ struct ReadItemRow: View {
 }
 
 #Preview {
-  ReadItemRow(item: testReadItems[1], editAction: {}).padding()
+  ReadItemRow(item: testReadItems[4], editAction: {}).padding()
 }

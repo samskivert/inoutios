@@ -75,14 +75,19 @@ class ReadItem: Identifiable, Consumable {
 
   func isProtracted() -> Bool { true }
   func startable() -> Bool { started != nil }
+
+  func ratingIcon() -> String? {
+    if abandoned { "😴" }
+    else { rating.map({ $0.emoji }) }
+  }
 }
 
 var testReadItems: [ReadItem] {
   [
     ReadItem(created: .now.addingTimeInterval(-10), started: .now, recommender: "Some guy", format: .book, title: "The Cat in the Hat", author: "Dr. Seuss"),
-    ReadItem(created: .now.addingTimeInterval(-20), format: .book, title: "One Flew Over the Cuckoo's Nest", author: "Ken Kesey"),
+    ReadItem(created: .now.addingTimeInterval(-20), link: "https://samskivert.com/", format: .book, title: "One Flew Over the Cuckoo's Nest", author: "Ken Kesey"),
     ReadItem(created: .now.addingTimeInterval(-30), format: .article, title: "A Brief History of Chickens"),
     ReadItem(created: .now.addingTimeInterval(-40), recommender: "Mom", format: .book, title: "The Great Gatsby", author: "F. Scott Fitzgerald"),
-    ReadItem(created: .now.addingTimeInterval(-50), started: .now.addingTimeInterval(-20), completed: .now, format: .paper, title: "Goto Considered Harmful", author: "Edsgar Dijkstra"),
+    ReadItem(created: .now.addingTimeInterval(-50), started: .now.addingTimeInterval(-20), completed: .now, rating: .good, format: .paper, title: "Goto Considered Harmful", author: "Edsgar Dijkstra"),
   ]
 }

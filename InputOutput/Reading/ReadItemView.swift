@@ -12,12 +12,6 @@ func ??<T>(binding: Binding<T?>, fallback: T) -> Binding<T> where T : Equatable 
   })
 }
 
-func formatDate(date :Date) -> String {
-  let formatter = DateFormatter()
-  formatter.dateStyle = .short
-  return formatter.string(from: date)
-}
-
 struct ReadItemView : View {
   @Environment(\.modelContext) var modelContext
   @Environment(\.dismiss) private var dismiss
@@ -62,7 +56,10 @@ struct ReadItemView : View {
       if item.completed != nil {
         DatePicker("Completed", selection: $item.completed ?? Date(), displayedComponents: [.date])
       }
-      Text("Created: \(formatDate(date: item.created))")
+      HStack {
+        Text("Created:")
+        Text(item.created, format: .dateTime.day().month().year())
+      }
       HStack {
         // these buttons have to be marked .borderless otherwise clicking anywhere in the HStack
         // will trigger the first button, yay!
