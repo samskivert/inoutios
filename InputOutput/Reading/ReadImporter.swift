@@ -24,7 +24,7 @@ struct ReadImporter {
               items.append(ReadItem(
                 id: UUID(),
                 created: Date(timeIntervalSince1970: TimeInterval(json.created) / 1000),
-                tags: json.tags ?? [],
+                tags: (json.tags ?? []).map({ Tag(name: $0) }),
                 link: json.link,
                 started: parseDate(json.started),
                 completed: parseDate(json.completed),

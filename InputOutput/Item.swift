@@ -40,6 +40,10 @@ enum Progress {
 
 typealias Filter = (String) -> Bool
 
+struct Tag: Codable {
+  let name: String
+}
+
 protocol Item {
   var id: UUID { get }
   var created: Date { get }

@@ -9,6 +9,9 @@ func readItemIcon (_ format: ReadType) -> some View {
   case .article:
     Image(systemName: "magazine").resizable().frame(width: 18, height: 18)
       .padding([.leading, .trailing], 2)
+  case .audiobook:
+    Image(systemName: "headphones").resizable().frame(width: 18, height: 18)
+      .padding([.leading, .trailing], 2)
   }
 }
 
@@ -59,5 +62,5 @@ struct ReadItemRow: View {
 }
 
 #Preview {
-  ReadItemRow(item: testReadItems[4], editAction: {}).padding()
+  ReadItemRow(item: testReadItems[1], editAction: {}).padding()
 }

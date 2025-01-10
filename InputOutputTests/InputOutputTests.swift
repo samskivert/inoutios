@@ -1,4 +1,5 @@
 import Testing
+import XCTest
 import Foundation
 @testable import InputOutput
 
@@ -28,11 +29,13 @@ struct InputOutputTests {
   }]
   """
 
-    @Test func example() async throws {
-        let importer = ReadImporter()
-        let items = importer.importItems(readJson.data(using: .utf8)!)
-        for item in items {
-            print("Decoded: \(item) \(item.created) \(item.title)")
-        }
+  @Test func testJsonImport() async throws {
+    let importer = ReadImporter()
+    let items = importer.importItems(readJson.data(using: .utf8)!)
+    for item in items {
+      XCTAssert(item.title != "", "\(item) has empty title.")
+      XCTAssert(item.completed != nil, "\(item) has missing completed date.")
     }
+    XCTAssert(!items[0].tags.isEmpty, "\(items[0]) failed to import tags")
+  }
 }
