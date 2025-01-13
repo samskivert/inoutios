@@ -1,16 +1,9 @@
-//
-//  ReadImporter.swift
-//  InputOutput
-//
-//  Created by Michael Bayne on 12/11/24.
-//
-
 import Foundation
 
 struct ReadImporter {
     let dateFormatter = DateFormatter()
 
-    func importItems(_ data :Data) -> [ReadItem] {
+    func importItems(_ data: Data) -> [ReadItem] {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
 
@@ -20,8 +13,9 @@ struct ReadImporter {
         do {
           let jsons = try decoder.decode([ReadJson].self, from: data)
           for json in jsons {
-              print("Decoded: \(json)")
-              items.append(ReadItem(
+            print("Decoded: \(json)")
+            items.append(
+              ReadItem(
                 id: UUID(),
                 created: Date(timeIntervalSince1970: TimeInterval(json.created) / 1000),
                 tags: (json.tags ?? []).map({ Tag(name: $0) }),
@@ -42,7 +36,7 @@ struct ReadImporter {
         return items
     }
 
-    func parseRating(_ rating :String?) -> Rating {
+    func parseRating(_ rating: String?) -> Rating {
         if let r = rating {
             switch r {
             case "none": return .none
@@ -60,7 +54,7 @@ struct ReadImporter {
         }
     }
 
-    func parseType (_ format :String) -> ReadType {
+    func parseType(_ format: String) -> ReadType {
         switch format {
         case "book": return .book
         case "article": return .article
@@ -71,7 +65,7 @@ struct ReadImporter {
         }
     }
 
-    func parseDate (_ when :String?) -> Date? {
+    func parseDate(_ when: String?) -> Date? {
         if when == nil { return nil }
         return dateFormatter.date(from: when!)
     }
