@@ -1,17 +1,17 @@
 import SwiftUI
 
-struct ReadItemRow: View {
-  
-  var item :ReadItem
+struct WatchItemRow: View {
+
+  var item :WatchItem
   var editAction :() -> Void
 
   var body: some View {
     HStack {
-      readItemIcon(item.format)
+      watchItemIcon(item.format)
       VStack(alignment: .leading) {
         Text(item.title).font(.headline)
         HStack {
-          item.author.map { Text($0).font(.subheadline) }
+          item.director.map { Text($0).font(.subheadline) }
           item.recommender.map { Text("(via \($0))").font(.subheadline) }
         }
       }.frame(maxWidth: .infinity, alignment: .leading)
@@ -52,5 +52,5 @@ struct ReadItemRow: View {
 }
 
 #Preview {
-  ReadItemRow(item: testReadItems[2], editAction: {}).padding()
+  WatchItemRow(item: testWatchItems[2], editAction: {}).padding()
 }

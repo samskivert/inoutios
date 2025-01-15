@@ -5,7 +5,7 @@ enum SchemaV1 : VersionedSchema {
   static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 1)
 
   static var models: [any PersistentModel.Type] {
-    return [ReadItem.self]
+    return [ReadItem.self, WatchItem.self]
   }
 }
 

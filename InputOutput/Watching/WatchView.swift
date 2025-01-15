@@ -1,29 +1,29 @@
 import SwiftData
 import SwiftUI
 
-func readSection(
+func watchSection(
   _ title: String,
-  _ items: [ReadItem],
-  _ editItem: Binding<ReadItem?>
+  _ items: [WatchItem],
+  _ editItem: Binding<WatchItem?>
 ) -> some View {
   Section(header: Text(title)) {
     ForEach(items) { item in
-      ReadItemRow(item: item, editAction: { editItem.wrappedValue = item })
+      WatchItemRow(item: item, editAction: { editItem.wrappedValue = item })
     }
   }
 }
 
-struct ReadSearchResultsList: View {
-  @Query private var searchResults: [ReadItem]
-  private var editItem: Binding<ReadItem?>
+struct WatchSearchResultsList: View {
+  @Query private var searchResults: [WatchItem]
+  private var editItem: Binding<WatchItem?>
 
-  init(search: String, editItem: Binding<ReadItem?>) {
+  init(search: String, editItem: Binding<WatchItem?>) {
     _searchResults = Query(
-      filter: #Predicate<ReadItem> { item in
+      filter: #Predicate<WatchItem> { item in
         item.title.localizedStandardContains(search)
-          || (item.author?.localizedStandardContains(search) ?? false)
+          || (item.director?.localizedStandardContains(search) ?? false)
           || (item.recommender?.localizedStandardContains(search) ?? false)
-      }, sort: [SortDescriptor(\ReadItem.completed), SortDescriptor(\ReadItem.created)])
+      }, sort: [SortDescriptor(\WatchItem.completed), SortDescriptor(\WatchItem.created)])
     self.editItem = editItem
   }
 
@@ -31,41 +31,41 @@ struct ReadSearchResultsList: View {
     if searchResults.isEmpty {
       Text("No matches.")
     } else {
-      readSection("Search Results", searchResults, editItem)
+      watchSection("Search Results", searchResults, editItem)
     }
   }
 }
 
-struct ReadView: View {
+struct WatchView: View {
   @Environment(\.modelContext) var modelContext
 
   @Query(
-    filter: #Predicate<ReadItem> {
+    filter: #Predicate<WatchItem> {
       $0.completed == nil && $0.started != nil
     },
-    sort: \ReadItem.started
+    sort: \WatchItem.started
   )
-  var reading: [ReadItem]
+  var started: [WatchItem]
 
   @Query(
-    filter: #Predicate<ReadItem> { $0.started == nil },
-    sort: \ReadItem.created, order: .reverse
+    filter: #Predicate<WatchItem> { $0.started == nil && $0.completed == nil },
+    sort: \WatchItem.created, order: .reverse
   )
-  var unstarted: [ReadItem]
+  var unstarted: [WatchItem]
 
   @Query(
-    filter: #Predicate<ReadItem> { $0.completed != nil },
-    sort: \ReadItem.completed, order: .reverse
+    filter: #Predicate<WatchItem> { $0.completed != nil },
+    sort: \WatchItem.completed, order: .reverse
   )
-  var completed: [ReadItem]
+  var completed: [WatchItem]
 
   @State private var searchText: String = ""
-  @State private var isEditing: ReadItem? = nil
+  @State private var isEditing: WatchItem? = nil
   @State private var showImport: Bool = false
 
   private var showSearch: Bool { searchText != "" && searchText.count > 1 }
 
-  private var completedByYear: [(Int, [ReadItem])] {
+  private var completedByYear: [(Int, [WatchItem])] {
     let calendar = Calendar.current
     let byyear = Dictionary(
       grouping: completed, by: { calendar.component(.year, from: $0.completed!) }
@@ -78,29 +78,29 @@ struct ReadView: View {
   var body: some View {
     NavigationStack {
       List {
-        if !reading.isEmpty && !showSearch {
-          readSection("Reading", reading, $isEditing)
+        if !started.isEmpty && !showSearch {
+          watchSection("Watching", started, $isEditing)
         }
         if unstarted.isEmpty {
           ContentUnavailableView(
-            "Nothing to read",
+            "Nothing to watch",
             systemImage: "doc.text",
             description: Text("You haven't added any items yet.")
           )
         } else if !showSearch {
-          readSection("To Read", unstarted, $isEditing)
+          watchSection("To Watch", unstarted, $isEditing)
         }
         if !completed.isEmpty && !showSearch {
           ForEach(completedByYear, id: \.0) { year, items in
-            readSection("Read in \(year)", items, $isEditing)
+            watchSection("Watched in \(year)", items, $isEditing)
           }
         }
         if showSearch {
-          ReadSearchResultsList(search: searchText, editItem: $isEditing)
+          WatchSearchResultsList(search: searchText, editItem: $isEditing)
         }
       }
       .sheet(isPresented: Binding(get: { isEditing != nil }, set: { _ in isEditing = nil })) {
-        ReadItemView(item: isEditing!)
+        WatchItemView(item: isEditing!)
           #if !os(iOS)
             .padding()
           #endif
@@ -109,7 +109,7 @@ struct ReadView: View {
         // ToolbarItem(placement: .navigationBarTrailing)
         ToolbarItemGroup(placement: .automatic) {
           Button(action: {
-            let item = ReadItem(created: .now, format: .book, title: "")
+            let item = WatchItem(created: .now, format: .film, title: "")
             modelContext.insert(item)
             isEditing = item
           }) {
@@ -124,7 +124,7 @@ struct ReadView: View {
         .navigationBarTitleDisplayMode(.inline)
         .listStyle(GroupedListStyle())
       #endif
-      .navigationTitle("Reading")
+      .navigationTitle("Watching")
       .searchable(text: $searchText)
       .fileImporter(isPresented: $showImport, allowedContentTypes: [.json]) { result in
         switch result {
@@ -136,7 +136,7 @@ struct ReadView: View {
             return
           }
           do {
-            let items = try ReadImporter().importItems(Data(contentsOf: url))
+            let items = try WatchImporter().importItems(Data(contentsOf: url))
             for item in items {
               modelContext.insert(item)
             }
@@ -153,9 +153,9 @@ struct ReadView: View {
 
 #Preview {
   let config = ModelConfiguration(isStoredInMemoryOnly: true)
-  let container = try! ModelContainer(for: ReadItem.self, configurations: config)
-  for item in testReadItems {
+  let container = try! ModelContainer(for: WatchItem.self, configurations: config)
+  for item in testWatchItems {
     container.mainContext.insert(item)
   }
-  return ReadView().modelContainer(container)
+  return WatchView().modelContainer(container)
 }

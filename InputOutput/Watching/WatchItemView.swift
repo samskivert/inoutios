@@ -1,18 +1,18 @@
 import SwiftUI
 
-struct ReadItemView : View {
+struct WatchItemView : View {
   @Environment(\.modelContext) var modelContext
   @Environment(\.dismiss) private var dismiss
-  @State var item :ReadItem
+  @State var item :WatchItem
 
   var body :some View {
     Form {
       TextField("Title", text: $item.title)
-      TextField("Author", text: $item.author ?? "")
+      TextField("Director", text: $item.director ?? "")
       Picker("Type", selection: $item.format) {
-        ForEach(ReadType.allCases) { option in
+        ForEach(WatchType.allCases) { option in
           HStack {
-            readItemIcon(option)
+            watchItemIcon(option)
             Text(String(describing: option))
           }
         }
@@ -28,8 +28,10 @@ struct ReadItemView : View {
           Text(String(describing: option))
         }
       }
-      Toggle(isOn: $item.abandoned) {
-        Text("Abandoned")
+      if item.isProtracted() {
+        Toggle(isOn: $item.abandoned) {
+          Text("Abandoned")
+        }
       }
       if item.started != nil {
         HStack {
@@ -74,5 +76,5 @@ struct ReadItemView : View {
 }
 
 #Preview {
-  ReadItemView(item: testReadItems[0]).padding()
+  WatchItemView(item: testWatchItems[0]).padding()
 }
