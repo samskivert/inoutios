@@ -28,7 +28,7 @@ enum Progress {
   case unstarted
   case started
   case completed
-  
+
   var icon: String {
     switch self {
     case .unstarted: return "play.square"
@@ -44,15 +44,16 @@ struct Tag: Codable {
   let name: String
 }
 
-protocol Item {
+protocol Item : AnyObject {
   var id: UUID { get }
   var created: Date { get }
-  var link: String? { get }
-  var started: Date? { get }
-  var completed: Date? { get }
+  var link: String? { get set }
+  var started: Date? { get set }
+  var completed: Date? { get set }
 
   func isProtracted() -> Bool
   func startable() -> Bool
+  func ratingIcon() -> String?
 }
 
 extension Item {

@@ -14,11 +14,11 @@ enum SchemaV1 : VersionedSchema {
 //    static var schemas: [any VersionedSchema.Type] {
 //        [SchemaV0.self, SchemaV1.self]
 //    }
-//    
+//
 //    static var stages: [MigrationStage] {
 //        [migrateV0toV1]
 //    }
-//    
+//
 //    static let migrateV0toV1 = MigrationStage.custom(
 //        fromVersion: SchemaV0.self,
 //        toVersion: SchemaV1.self,

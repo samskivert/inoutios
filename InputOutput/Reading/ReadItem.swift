@@ -29,7 +29,7 @@ struct ReadJson: Decodable {
 
 extension SchemaV1 {
   @Model
-  class ReadItem: Identifiable, Consumable {
+  class ReadItem: Identifiable, Consumable, Item {
     // Item properties
     var id: UUID = UUID()
     var created: Date = Date.now
