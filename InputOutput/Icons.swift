@@ -1,35 +1,54 @@
 import SwiftUI
 
-func squareIcon(_ name :String, _ width :CGFloat, _ height :CGFloat) -> AnyView {
-  AnyView(Image(systemName: name).resizable().frame(width: width, height: height).padding(.all, 0))
+func squareIcon(_ name :String, _ dwidth :CGFloat = 0, _ dheight :CGFloat = 0) -> AnyView {
+  AnyView(Image(systemName: name).resizable().frame(width: 22+dwidth, height: 18+dheight).padding(.all, 0))
 }
 
-func rectIcon(_ name :String, _ width :CGFloat, _ height :CGFloat) -> AnyView {
-  AnyView(Image(systemName: name).resizable().frame(width: width, height: height).padding([.leading, .trailing], 2))
+func rectIcon(_ name :String, _ dwidth :CGFloat = 0, _ dheight :CGFloat = 0) -> AnyView {
+  AnyView(Image(systemName: name).resizable().frame(width: 18+dwidth, height: 18+dheight).padding([.leading, .trailing], 2))
 }
 
 func readItemIcon (_ format: ReadType) -> AnyView {
   switch format {
   case .book:
-    squareIcon("book", 22, 18)
+    squareIcon("book")
   case .paper:
-    squareIcon("newspaper", 22, 18)
+    squareIcon("newspaper")
   case .article:
-    rectIcon("magazine", 18, 18)
+    rectIcon("magazine")
   case .audiobook:
-    rectIcon("headphones", 18, 18)
+    rectIcon("headphones")
   }
 }
 
 func watchItemIcon (_ format: WatchType) -> AnyView {
   switch format {
   case .film:
-    squareIcon("film", 22, 18)
+    squareIcon("film")
   case .video:
-    squareIcon("video", 22, 18)
+    squareIcon("video")
   case .show:
-    squareIcon("tv", 22, 18)
+    rectIcon("tv")
   case .other:
-    squareIcon("eye", 22, 18)
+    squareIcon("eye")
+  }
+}
+
+func playItemIcon (_ platform: Platform) -> AnyView {
+  switch platform {
+  case .pc:
+    squareIcon("pc")
+  case .table:
+    squareIcon("table.furniture")
+  case .mobile:
+    squareIcon("iphone.gen1")
+  case .nswitch, .vita:
+    squareIcon("formfitting.gamecontroller", 0, -3)
+  case .n3ds, .wiiu, .wii, .cube, .n64, .gameboy, .dcast:
+    squareIcon("gamecontroller")
+  case .ps1, .ps2, .ps3, .ps4, .ps5:
+    squareIcon("playstation.logo")
+  case .xbox:
+    rectIcon("xbox.logo")
   }
 }
