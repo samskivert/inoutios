@@ -5,7 +5,7 @@ func squareIcon(_ name :String, _ dwidth :CGFloat = 0, _ dheight :CGFloat = 0) -
 }
 
 func rectIcon(_ name :String, _ dwidth :CGFloat = 0, _ dheight :CGFloat = 0) -> AnyView {
-  AnyView(Image(systemName: name).resizable().frame(width: 18+dwidth, height: 18+dheight).padding([.leading, .trailing], 2))
+  AnyView(Image(systemName: name).resizable().frame(width: 18+dwidth, height: 18+dheight).padding([.leading, .trailing], 2-dwidth/2))
 }
 
 func readItemIcon (_ format: ReadType) -> AnyView {
@@ -49,6 +49,20 @@ func playItemIcon (_ platform: Platform) -> AnyView {
   case .ps1, .ps2, .ps3, .ps4, .ps5:
     squareIcon("playstation.logo")
   case .xbox:
-    rectIcon("xbox.logo")
+    rectIcon("xbox.logo", 1)
   }
 }
+
+func listenItemIcon (_ format: ListenType) -> AnyView {
+  switch format {
+  case .song:
+    rectIcon("headphones")
+  case .album:
+    rectIcon("record.circle.fill")
+  case .podcast:
+    rectIcon("microphone", -4)
+  case .other:
+    rectIcon("waveform.circle.fill")
+  }
+}
+

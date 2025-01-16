@@ -5,7 +5,7 @@ enum SchemaV1 : VersionedSchema {
   static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 1)
 
   static var models: [any PersistentModel.Type] {
-    return [ReadItem.self, WatchItem.self, PlayItem.self]
+    return [ReadItem.self, WatchItem.self, PlayItem.self, ListenItem.self]
   }
 }
 
@@ -59,4 +59,24 @@ func setupModelContainer(
   } catch {
     throw ModelError.setup(error: error)
   }
+}
+
+@MainActor
+func setupPreviewModelContainer () -> ModelContainer {
+  let schema = Schema(versionedSchema: SchemaV1.self)
+  let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+  let container = try! ModelContainer(for: schema, configurations: config)
+  for item in testReadItems {
+    container.mainContext.insert(item)
+  }
+  for item in testWatchItems {
+    container.mainContext.insert(item)
+  }
+  for item in testPlayItems {
+    container.mainContext.insert(item)
+  }
+  for item in testListenItems {
+    container.mainContext.insert(item)
+  }
+  return container
 }

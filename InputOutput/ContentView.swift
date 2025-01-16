@@ -33,10 +33,5 @@ struct ContentView: View {
 }
 
 #Preview {
-  let config = ModelConfiguration(isStoredInMemoryOnly: true)
-  let container = try! ModelContainer(for: ReadItem.self, configurations: config)
-  for item in testReadItems {
-    container.mainContext.insert(item)
-  }
-  return ContentView().modelContainer(container)
+  ContentView().modelContainer(setupPreviewModelContainer())
 }

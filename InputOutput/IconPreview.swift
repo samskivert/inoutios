@@ -11,6 +11,9 @@ struct IconPreview: View {
       HStack {
         ForEach(Platform.allCases) { playItemIcon($0) }
       }
+      HStack {
+        ForEach(ListenType.allCases) { listenItemIcon($0) }
+      }
     }
 }
 
