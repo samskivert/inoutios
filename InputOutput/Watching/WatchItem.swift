@@ -48,6 +48,20 @@ extension SchemaV1 {
     var director: String?
     var abandoned: Bool = false
 
+    var subtitle :String? { director }
+    var icon :Icon {
+      switch format {
+      case .show: .show
+      case .film: .film
+      case .video: .video
+      case .other: .otherWatch
+      }
+    }
+    var extraIcon :Icon? { nil }
+    var ratingIcon: String? { if abandoned { "😴" } else { rating.map({ $0.emoji }) } }
+
+    var isProtracted: Bool { format != .film }
+
     init(
       id: UUID = UUID(),
       created: Date,
@@ -74,13 +88,6 @@ extension SchemaV1 {
       self.title = title
       self.director = director
       self.abandoned = abandoned
-    }
-
-    func isProtracted() -> Bool { format != .film }
-    func startable() -> Bool { started != nil }
-
-    func ratingIcon() -> String? {
-      if abandoned { "😴" } else { rating.map({ $0.emoji }) }
     }
   }
 }

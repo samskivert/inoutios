@@ -48,6 +48,20 @@ extension SchemaV1 {
     var author: String?
     var abandoned: Bool = false
 
+    var subtitle :String? { author }
+    var icon :Icon {
+      switch format {
+      case .article: .article
+      case .book: .book
+      case .paper: .paper
+      case .audiobook: .audiobook
+      }
+    }
+    var extraIcon :Icon? { nil }
+    var ratingIcon: String? { if abandoned { "😴" } else { rating.map({ $0.emoji }) } }
+
+    var isProtracted: Bool { true }
+
     init(
       id: UUID = UUID(),
       created: Date,
@@ -74,13 +88,6 @@ extension SchemaV1 {
       self.title = title
       self.author = author
       self.abandoned = abandoned
-    }
-
-    func isProtracted() -> Bool { true }
-    func startable() -> Bool { started != nil }
-
-    func ratingIcon() -> String? {
-      if abandoned { "😴" } else { rating.map({ $0.emoji }) }
     }
   }
 }

@@ -68,11 +68,14 @@ struct ReadItemView : View {
         Button("Close") {
           dismiss()
         }.buttonStyle(.borderless)
+      }
     }
-    }
+#if !os(iOS)
+    .padding()
+#endif
   }
 }
 
 #Preview {
-  ReadItemView(item: testReadItems[0]).padding()
+  ReadItemView(item: testReadItems[0])
 }

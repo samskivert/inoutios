@@ -51,9 +51,13 @@ protocol Item : AnyObject {
   var started: Date? { get set }
   var completed: Date? { get set }
 
-  func isProtracted() -> Bool
-  func startable() -> Bool
-  func ratingIcon() -> String?
+  var title :String { get }
+  var subtitle :String? { get }
+  var icon :Icon { get }
+  var extraIcon :Icon? { get }
+  var ratingIcon :String? { get }
+
+  var isProtracted :Bool { get }
 }
 
 extension Item {

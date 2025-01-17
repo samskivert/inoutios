@@ -33,12 +33,12 @@ func itemInfo (_ title :String, _ subtitle :String?, _ recommender :String?) -> 
 func itemStatus (_ item :Item) -> AnyView {
   if let when = item.completed {
     AnyView(VStack {
-      item.ratingIcon().map { Text($0) }
+      item.ratingIcon.map { Text($0) }
       Text(when, format: .dateTime.day().month()).font(.subheadline)
     })
   } else {
     AnyView(Button(action: {
-      if item.started == nil && item.isProtracted() {
+      if item.started == nil && item.isProtracted {
         item.started = .now
       } else if item.completed == nil {
         if item.started == nil {
@@ -54,8 +54,30 @@ func itemStatus (_ item :Item) -> AnyView {
   }
 }
 
-func itemEdit (_ editAction :@escaping () -> Void) -> some View {
-  Button(action: editAction) {
-    Image(systemName: "square.and.pencil").resizable().frame(width: 19, height: 19).padding(.bottom, 4)
-  }.buttonStyle(PlainButtonStyle()).padding(4)
+struct ItemRow: View {
+  var item :Consumable
+
+  var body: some View {
+    HStack {
+      icon(item.icon)
+      itemInfo(item.title, item.subtitle, item.recommender)
+      linkButton(item.link)
+      if let extraIcon = item.extraIcon { icon(extraIcon) }
+      itemStatus(item)
+    }
+  }
+}
+
+func itemSection<T, D>(
+  _ title: String,
+  _ items: [T],
+  _ onClick : @escaping (T) -> D
+) -> some View where T : Consumable, T: Identifiable, D : View {
+  Section(header: Text(title)) {
+    ForEach(items) { item in
+      NavigationLink(destination: { onClick(item) }) {
+        ItemRow(item: item)
+      }
+    }
+  }
 }

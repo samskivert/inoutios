@@ -48,6 +48,20 @@ extension SchemaV1 {
     var artist: String?
     var abandoned: Bool = false
 
+    var subtitle :String? { artist }
+    var icon :Icon {
+      switch format {
+      case .album: .album
+      case .song: .song
+      case .podcast: .podcast
+      case .other: .otherListen
+      }
+    }
+    var extraIcon :Icon? { nil }
+    var ratingIcon :String? { if abandoned { "😴" } else { rating.map({ $0.emoji }) } }
+
+    var isProtracted :Bool { format == .podcast }
+
     init(
       id: UUID = UUID(),
       created: Date,
@@ -74,13 +88,6 @@ extension SchemaV1 {
       self.title = title
       self.artist = artist
       self.abandoned = abandoned
-    }
-
-    func isProtracted() -> Bool { format == .podcast }
-    func startable() -> Bool { started != nil }
-
-    func ratingIcon() -> String? {
-      if abandoned { "😴" } else { rating.map({ $0.emoji }) }
     }
   }
 }

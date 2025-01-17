@@ -28,7 +28,7 @@ struct ListenItemView : View {
           Text(String(describing: option))
         }
       }
-      if item.isProtracted() {
+      if item.isProtracted {
         Toggle(isOn: $item.abandoned) {
           Text("Abandoned")
         }
@@ -70,11 +70,14 @@ struct ListenItemView : View {
         Button("Close") {
           dismiss()
         }.buttonStyle(.borderless)
+      }
     }
-    }
+#if !os(iOS)
+    .padding()
+#endif
   }
 }
 
 #Preview {
-  ListenItemView(item: testListenItems[0]).padding()
+  ListenItemView(item: testListenItems[0])
 }

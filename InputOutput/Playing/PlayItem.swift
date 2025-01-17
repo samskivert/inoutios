@@ -64,6 +64,23 @@ extension SchemaV1 {
     var title: String = ""
     var sawCredits: Bool = false
 
+    var subtitle :String? { platform.label }
+    var icon :Icon {
+      switch platform {
+      case .pc: .pc
+      case .table: .table
+      case .mobile: .mobile
+      case .nswitch, .vita: .controller1
+      case .n3ds, .wiiu, .wii, .cube, .n64, .gameboy, .dcast: .controller2
+      case .ps1, .ps2, .ps3, .ps4, .ps5: .playstation
+      case .xbox: .xbox
+      }
+    }
+    var extraIcon :Icon? { if sawCredits { .sawCredits } else { nil } }
+    var ratingIcon: String? { rating.map({ $0.emoji }) }
+
+    var isProtracted: Bool { true }
+
     init(
       id: UUID = UUID(),
       created: Date,
@@ -88,13 +105,6 @@ extension SchemaV1 {
       self.platform = platform
       self.title = title
       self.sawCredits = sawCredits
-    }
-
-    func isProtracted() -> Bool { true }
-    func startable() -> Bool { started != nil }
-
-    func ratingIcon() -> String? {
-      rating.map({ $0.emoji })
     }
   }
 }

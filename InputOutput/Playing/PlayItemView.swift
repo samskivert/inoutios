@@ -27,7 +27,7 @@ struct PlayItemView : View {
           Text(String(describing: option))
         }
       }
-      if item.isProtracted() {
+      if item.isProtracted {
         Toggle(isOn: $item.sawCredits) {
           Text("Saw Credits")
         }
@@ -69,11 +69,14 @@ struct PlayItemView : View {
         Button("Close") {
           dismiss()
         }.buttonStyle(.borderless)
+      }
     }
-    }
+#if !os(iOS)
+    .padding()
+#endif
   }
 }
 
 #Preview {
-  PlayItemView(item: testPlayItems[0]).padding()
+  PlayItemView(item: testPlayItems[0])
 }

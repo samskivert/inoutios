@@ -3,42 +3,61 @@ import SwiftUI
 
 func watchSection(
   _ title: String,
-  _ items: [WatchItem],
-  _ editItem: Binding<WatchItem?>
+  _ items: [WatchItem]
 ) -> some View {
-  Section(header: Text(title)) {
-    ForEach(items) { item in
-      WatchItemRow(item: item, editAction: { editItem.wrappedValue = item })
-    }
-  }
+  itemSection(title, items, { WatchItemView(item: $0) })
 }
 
 struct WatchSearchResultsList: View {
   @Query private var searchResults: [WatchItem]
-  private var editItem: Binding<WatchItem?>
 
-  init(search: String, editItem: Binding<WatchItem?>) {
+  init(search: String) {
     _searchResults = Query(
       filter: #Predicate<WatchItem> { item in
         item.title.localizedStandardContains(search)
           || (item.director?.localizedStandardContains(search) ?? false)
           || (item.recommender?.localizedStandardContains(search) ?? false)
       }, sort: [SortDescriptor(\WatchItem.completed), SortDescriptor(\WatchItem.created)])
-    self.editItem = editItem
   }
 
   var body: some View {
     if searchResults.isEmpty {
       Text("No matches.")
     } else {
-      watchSection("Search Results", searchResults, editItem)
+      watchSection("Search Results", searchResults)
     }
   }
 }
 
-struct WatchView: View {
-  @Environment(\.modelContext) var modelContext
+struct WatchHistoryList: View {
+  @Query(
+    filter: #Predicate<WatchItem> { $0.completed != nil },
+    sort: \WatchItem.completed, order: .reverse
+  )
+  var completed: [WatchItem]
 
+  var completedByYear: [(Int, [WatchItem])] {
+    let calendar = Calendar.current
+    let byyear = Dictionary(
+      grouping: completed, by: { calendar.component(.year, from: $0.completed!) }
+    )
+    return Array(byyear.keys).sorted(by: { $0 > $1 }).map { year in
+      (year, Array(byyear[year]!))
+    }
+  }
+
+  var body: some View {
+    if completed.isEmpty {
+      noItems("No completed items")
+    } else {
+      ForEach(completedByYear, id: \.0) { year, items in
+        watchSection("Watched in \(year)", items)
+      }
+    }
+  }
+}
+
+struct WatchCurrentView: View {
   @Query(
     filter: #Predicate<WatchItem> {
       $0.completed == nil && $0.started != nil
@@ -53,76 +72,82 @@ struct WatchView: View {
   )
   var unstarted: [WatchItem]
 
-  @Query(
-    filter: #Predicate<WatchItem> { $0.completed != nil },
-    sort: \WatchItem.completed, order: .reverse
-  )
-  var completed: [WatchItem]
+  static var recentDescriptor: FetchDescriptor<WatchItem> {
+    var descriptor = FetchDescriptor<WatchItem>(
+      predicate: #Predicate<WatchItem> { $0.completed != nil },
+      sortBy: [SortDescriptor(\.completed, order: .reverse)])
+    descriptor.fetchLimit = 5
+    return descriptor
+  }
+  @Query(recentDescriptor)
+  var recentlyCompleted: [WatchItem]
 
-  @State private var searchText: String = ""
-  @State private var isEditing: WatchItem? = nil
-  @State private var showImport: Bool = false
-
-  private var showSearch: Bool { searchText != "" && searchText.count > 1 }
-
-  private var completedByYear: [(Int, [WatchItem])] {
-    let calendar = Calendar.current
-    let byyear = Dictionary(
-      grouping: completed, by: { calendar.component(.year, from: $0.completed!) }
-    )
-    return Array(byyear.keys).sorted(by: { $0 > $1 }).map { year in
-      (year, Array(byyear[year]!))
+  var body: some View {
+    if !started.isEmpty {
+      watchSection("Watching", started)
+    }
+    if unstarted.isEmpty {
+      noItems("Nothing to watch")
+    } else {
+      watchSection("To Watch", unstarted)
+    }
+    if !recentlyCompleted.isEmpty {
+      watchSection("Recently Watched", recentlyCompleted)
     }
   }
+}
+
+struct NewWatchItemButton: View {
+  @Environment(\.modelContext) var modelContext
+  @State private var newItem: WatchItem? = nil
+
+  var body: some View {
+    Button(action: {
+      let item = WatchItem(created: .now, format: .film, title: "")
+      modelContext.insert(item)
+      newItem = item
+    }) {
+      Image(systemName: "plus")
+    }
+    .navigationDestination(item: $newItem) { item in
+      WatchItemView(item: item).onDisappear { newItem = nil }
+    }
+  }
+}
+
+struct WatchView: View {
+  @Environment(\.modelContext) var modelContext
+
+  @State private var searchText: String = ""
+  @State private var showImport: Bool = false
+  @State private var showHistory: Bool = false
+  private var showSearch: Bool { searchText != "" && searchText.count > 1 }
 
   var body: some View {
     NavigationStack {
       List {
-        if !started.isEmpty && !showSearch {
-          watchSection("Watching", started, $isEditing)
-        }
-        if unstarted.isEmpty {
-          ContentUnavailableView(
-            "Nothing to watch",
-            systemImage: "doc.text",
-            description: Text("You haven't added any items yet.")
-          )
-        } else if !showSearch {
-          watchSection("To Watch", unstarted, $isEditing)
-        }
-        if !completed.isEmpty && !showSearch {
-          ForEach(completedByYear, id: \.0) { year, items in
-            watchSection("Watched in \(year)", items, $isEditing)
-          }
-        }
         if showSearch {
-          WatchSearchResultsList(search: searchText, editItem: $isEditing)
+          WatchSearchResultsList(search: searchText)
+        } else if showHistory {
+          WatchHistoryList()
+        } else {
+          WatchCurrentView()
         }
-      }
-      .sheet(isPresented: Binding(get: { isEditing != nil }, set: { _ in isEditing = nil })) {
-        WatchItemView(item: isEditing!)
-          #if !os(iOS)
-            .padding()
-          #endif
       }
       .toolbar(content: {
-        // ToolbarItem(placement: .navigationBarTrailing)
         ToolbarItemGroup(placement: .automatic) {
-          Button(action: {
-            let item = WatchItem(created: .now, format: .film, title: "")
-            modelContext.insert(item)
-            isEditing = item
-          }) {
-            Image(systemName: "plus")
-          }.accessibilityLabel("Add a new item")
+          Toggle(isOn: $showHistory) {
+            Image(systemName: "calendar")
+          }
+          NewWatchItemButton()
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")
           }.accessibilityLabel("Import items from JSON")
         }
       })
       #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        .listStyle(GroupedListStyle())
+      .navigationBarTitleDisplayMode(.inline)
+      .listStyle(GroupedListStyle())
       #endif
       .navigationTitle("Watching")
       .searchable(text: $searchText)
