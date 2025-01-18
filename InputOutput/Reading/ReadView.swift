@@ -1,11 +1,10 @@
 import SwiftData
 import SwiftUI
 
-func readSection(
-  _ title: String,
-  _ items: [ReadItem]
-) -> some View {
-  itemSection(title, items, { ReadItemView(item: $0) })
+let mkReadItemView = { ReadItemView(item: $0) }
+
+func readSection(_ title: String, _ items: [ReadItem]) -> some View {
+  itemSection(title, items, mkReadItemView)
 }
 
 struct ReadSearchResultsList: View {
@@ -37,15 +36,13 @@ struct ReadHistoryList: View {
   var completed: [ReadItem]
 
   var body: some View {
-    HistoryList(completed: completed, verbed: "Read", mkView: { ReadItemView(item: $0) })
+    HistoryList(completed: completed, verbed: "Read", mkView: mkReadItemView)
   }
 }
 
 struct ReadCurrentView: View {
   @Query(
-    filter: #Predicate<ReadItem> {
-      $0.completed == nil && $0.started != nil
-    },
+    filter: #Predicate<ReadItem> { $0.started != nil && $0.completed == nil },
     sort: \ReadItem.started
   )
   var started: [ReadItem]
@@ -107,7 +104,7 @@ struct ReadView: View {
           }
           ItemButton(
             mkItem: { ReadItem(created: .now, format: .book, title: "") },
-            mkView: { ReadItemView(item: $0) }
+            mkView: mkReadItemView
           )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")

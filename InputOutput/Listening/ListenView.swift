@@ -1,11 +1,10 @@
 import SwiftData
 import SwiftUI
 
-func listenSection(
-  _ title: String,
-  _ items: [ListenItem]
-) -> some View {
-  itemSection(title, items, { ListenItemView(item: $0) })
+let mkListenItemView = { ListenItemView(item: $0) }
+
+func listenSection(_ title: String, _ items: [ListenItem]) -> some View {
+  itemSection(title, items, mkListenItemView)
 }
 
 struct ListenSearchResultsList: View {
@@ -37,15 +36,13 @@ struct ListenHistoryList: View {
   var completed: [ListenItem]
 
   var body: some View {
-    HistoryList(completed: completed, verbed: "Listened", mkView: { ListenItemView(item: $0) })
+    HistoryList(completed: completed, verbed: "Listened", mkView: mkListenItemView)
   }
 }
 
 struct ListenCurrentView: View {
   @Query(
-    filter: #Predicate<ListenItem> {
-      $0.completed == nil && $0.started != nil
-    },
+    filter: #Predicate<ListenItem> { $0.started != nil && $0.completed == nil },
     sort: \ListenItem.started
   )
   var started: [ListenItem]
@@ -108,7 +105,7 @@ struct ListenView: View {
           }
           ItemButton(
             mkItem: { ListenItem(created: .now, format: .podcast, title: "") },
-            mkView: { ListenItemView(item: $0) }
+            mkView: mkListenItemView
           )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")

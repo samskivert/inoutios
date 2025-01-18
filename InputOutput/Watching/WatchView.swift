@@ -1,11 +1,10 @@
 import SwiftData
 import SwiftUI
 
-func watchSection(
-  _ title: String,
-  _ items: [WatchItem]
-) -> some View {
-  itemSection(title, items, { WatchItemView(item: $0) })
+let mkWatchItemView = { WatchItemView(item: $0) }
+
+func watchSection(_ title: String, _ items: [WatchItem]) -> some View {
+  itemSection(title, items, mkWatchItemView)
 }
 
 struct WatchSearchResultsList: View {
@@ -37,15 +36,13 @@ struct WatchHistoryList: View {
   var completed: [WatchItem]
 
   var body: some View {
-    HistoryList(completed: completed, verbed: "Watched", mkView: { WatchItemView(item: $0) })
+    HistoryList(completed: completed, verbed: "Watched", mkView: mkWatchItemView)
   }
 }
 
 struct WatchCurrentView: View {
   @Query(
-    filter: #Predicate<WatchItem> {
-      $0.completed == nil && $0.started != nil
-    },
+    filter: #Predicate<WatchItem> { $0.started != nil && $0.completed == nil },
     sort: \WatchItem.started
   )
   var started: [WatchItem]
@@ -107,7 +104,7 @@ struct WatchView: View {
           }
           ItemButton(
             mkItem: { WatchItem(created: .now, format: .film, title: "") },
-            mkView: { WatchItemView(item: $0) }
+            mkView: mkWatchItemView
           )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")

@@ -1,11 +1,10 @@
 import SwiftData
 import SwiftUI
 
-func playSection(
-  _ title: String,
-  _ items: [PlayItem]
-) -> some View {
-  itemSection(title, items, { PlayItemView(item: $0) })
+let mkPlayItemView = { PlayItemView(item: $0) }
+
+func playSection(_ title: String, _ items: [PlayItem]) -> some View {
+  itemSection(title, items, mkPlayItemView)
 }
 
 struct PlaySearchResultsList: View {
@@ -42,15 +41,13 @@ struct PlayHistoryList: View {
   var completed: [PlayItem]
 
   var body: some View {
-    HistoryList(completed: completed, verbed: "Played", mkView: { PlayItemView(item: $0) })
+    HistoryList(completed: completed, verbed: "Played", mkView: mkPlayItemView)
   }
 }
 
 struct PlayCurrentView: View {
   @Query(
-    filter: #Predicate<PlayItem> {
-      $0.completed == nil && $0.started != nil
-    },
+    filter: #Predicate<PlayItem> { $0.started != nil && $0.completed == nil },
     sort: \PlayItem.started
   )
   var started: [PlayItem]
@@ -112,7 +109,7 @@ struct PlayView: View {
           }
           ItemButton(
             mkItem: { PlayItem(created: .now, platform: .pc, title: "") },
-            mkView: { PlayItemView(item: $0) }
+            mkView: mkPlayItemView
           )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")
