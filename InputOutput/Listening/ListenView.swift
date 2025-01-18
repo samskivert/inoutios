@@ -82,7 +82,6 @@ struct ListenView: View {
   @Environment(\.modelContext) var modelContext
 
   @State private var searchText: String = ""
-  @State private var showImport: Bool = false
   @State private var showHistory: Bool = false
 
   private var showSearch: Bool { searchText != "" && searchText.count > 1 }
@@ -107,9 +106,6 @@ struct ListenView: View {
             mkItem: { ListenItem(created: .now, format: .podcast, title: "") },
             mkView: mkListenItemView
           )
-          Button(action: { showImport = true }) {
-            Image(systemName: "tray.and.arrow.down")
-          }.accessibilityLabel("Import items from JSON")
         }
       })
       #if os(iOS)
@@ -118,27 +114,6 @@ struct ListenView: View {
       #endif
       .navigationTitle("Listening")
       .searchable(text: $searchText)
-      .fileImporter(isPresented: $showImport, allowedContentTypes: [.json]) { result in
-        switch result {
-        case .success(let url):
-          let decoder = JSONDecoder()
-          decoder.keyDecodingStrategy = .convertFromSnakeCase
-          print("Importing from \(url)...")
-          guard url.startAccessingSecurityScopedResource() else {
-            return
-          }
-          do {
-            let items = try ListenImporter().importItems(Data(contentsOf: url))
-            for item in items {
-              modelContext.insert(item)
-            }
-          } catch {
-            print("Error decoding JSON: \(error)")
-          }
-        case .failure(let error):
-          print("Error importing JSON: \(error)")
-        }
-      }
     }
   }
 }

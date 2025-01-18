@@ -12,21 +12,6 @@ enum WatchType: String, Codable, CaseIterable, Identifiable, CustomStringConvert
   var description: String { rawValue }
 }
 
-struct WatchJson: Decodable {
-  var id: String
-  var director: String?
-  var created: UInt64
-  var title: String
-  var type: String
-  var tags: [String]?
-  var link: String?
-  var rating: String?
-  var started: String?
-  var completed: String?
-  var recommender: String?
-  var abandoned: Bool?
-}
-
 extension SchemaV1 {
   @Model
   class WatchItem: Identifiable, Consumable {

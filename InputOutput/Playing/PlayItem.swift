@@ -30,20 +30,6 @@ enum Platform: String, Codable, CaseIterable, Identifiable, CustomStringConverti
   var description: String { rawValue }
 }
 
-struct PlayJson: Decodable {
-  var id: String
-  var platform: String?
-  var created: UInt64
-  var title: String
-  var tags: [String]?
-  var link: String?
-  var rating: String?
-  var started: String?
-  var completed: String?
-  var recommender: String?
-  var credits: Bool?
-}
-
 extension SchemaV1 {
   @Model
   class PlayItem: Identifiable, Consumable {

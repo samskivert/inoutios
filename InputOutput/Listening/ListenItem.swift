@@ -12,21 +12,6 @@ enum ListenType: String, Codable, CaseIterable, Identifiable, CustomStringConver
   var description: String { rawValue }
 }
 
-struct ListenJson: Decodable {
-  var id: String
-  var artist: String?
-  var created: UInt64
-  var title: String
-  var type: String
-  var tags: [String]?
-  var link: String?
-  var rating: String?
-  var started: String?
-  var completed: String?
-  var recommender: String?
-  var abandoned: Bool?
-}
-
 extension SchemaV1 {
   @Model
   class ListenItem: Identifiable, Consumable {

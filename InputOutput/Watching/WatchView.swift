@@ -82,7 +82,6 @@ struct WatchView: View {
   @Environment(\.modelContext) var modelContext
 
   @State private var searchText: String = ""
-  @State private var showImport: Bool = false
   @State private var showHistory: Bool = false
   private var showSearch: Bool { searchText != "" && searchText.count > 1 }
 
@@ -106,9 +105,6 @@ struct WatchView: View {
             mkItem: { WatchItem(created: .now, format: .film, title: "") },
             mkView: mkWatchItemView
           )
-          Button(action: { showImport = true }) {
-            Image(systemName: "tray.and.arrow.down")
-          }.accessibilityLabel("Import items from JSON")
         }
       })
       #if os(iOS)
@@ -117,27 +113,6 @@ struct WatchView: View {
       #endif
       .navigationTitle("Watching")
       .searchable(text: $searchText)
-      .fileImporter(isPresented: $showImport, allowedContentTypes: [.json]) { result in
-        switch result {
-        case .success(let url):
-          let decoder = JSONDecoder()
-          decoder.keyDecodingStrategy = .convertFromSnakeCase
-          print("Importing from \(url)...")
-          guard url.startAccessingSecurityScopedResource() else {
-            return
-          }
-          do {
-            let items = try WatchImporter().importItems(Data(contentsOf: url))
-            for item in items {
-              modelContext.insert(item)
-            }
-          } catch {
-            print("Error decoding JSON: \(error)")
-          }
-        case .failure(let error):
-          print("Error importing JSON: \(error)")
-        }
-      }
     }
   }
 }
