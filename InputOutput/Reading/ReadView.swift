@@ -97,24 +97,6 @@ struct ReadCurrentView: View {
   }
 }
 
-struct NewReadItemButton: View {
-  @Environment(\.modelContext) var modelContext
-  @State private var newItem: ReadItem? = nil
-
-  var body: some View {
-    Button(action: {
-      let item = ReadItem(created: .now, format: .book, title: "")
-      modelContext.insert(item)
-      newItem = item
-    }) {
-      Image(systemName: "plus")
-    }
-    .navigationDestination(item: $newItem) { item in
-      ReadItemView(item: item).onDisappear { newItem = nil }
-    }
-  }
-}
-
 struct ReadView: View {
   @Environment(\.modelContext) var modelContext
 
@@ -139,7 +121,10 @@ struct ReadView: View {
           Toggle(isOn: $showHistory) {
             Image(systemName: "calendar")
           }
-          NewReadItemButton()
+          ItemButton(
+            mkItem: { ReadItem(created: .now, format: .book, title: "") },
+            mkView: { ReadItemView(item: $0) }
+          )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")
           }.accessibilityLabel("Import items from JSON")

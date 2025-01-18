@@ -97,24 +97,6 @@ struct ListenCurrentView: View {
   }
 }
 
-struct NewListenItemButton: View {
-  @Environment(\.modelContext) var modelContext
-  @State private var newItem: ListenItem? = nil
-
-  var body: some View {
-    Button(action: {
-      let item = ListenItem(created: .now, format: .podcast, title: "")
-      modelContext.insert(item)
-      newItem = item
-    }) {
-      Image(systemName: "plus")
-    }
-    .navigationDestination(item: $newItem) { item in
-      ListenItemView(item: item).onDisappear { newItem = nil }
-    }
-  }
-}
-
 struct ListenView: View {
   @Environment(\.modelContext) var modelContext
 
@@ -141,7 +123,10 @@ struct ListenView: View {
           Toggle(isOn: $showHistory) {
             Image(systemName: "calendar")
           }
-          NewListenItemButton()
+          ItemButton(
+            mkItem: { ListenItem(created: .now, format: .podcast, title: "") },
+            mkView: { ListenItemView(item: $0) }
+          )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")
           }.accessibilityLabel("Import items from JSON")

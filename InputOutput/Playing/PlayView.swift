@@ -62,24 +62,6 @@ struct PlayHistoryList: View {
   }
 }
 
-struct NewPlayItemButton: View {
-  @Environment(\.modelContext) var modelContext
-  @State private var newItem: PlayItem? = nil
-
-  var body: some View {
-    Button(action: {
-      let item = PlayItem(created: .now, platform: .pc, title: "")
-      modelContext.insert(item)
-      newItem = item
-    }) {
-      Image(systemName: "plus")
-    }
-    .navigationDestination(item: $newItem) { item in
-      PlayItemView(item: item).onDisappear { newItem = nil }
-    }
-  }
-}
-
 struct PlayCurrentView: View {
   @Query(
     filter: #Predicate<PlayItem> {
@@ -144,7 +126,10 @@ struct PlayView: View {
           Toggle(isOn: $showHistory) {
             Image(systemName: "calendar")
           }
-          NewPlayItemButton()
+          ItemButton(
+            mkItem: { PlayItem(created: .now, platform: .pc, title: "") },
+            mkView: { PlayItemView(item: $0) }
+          )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")
           }.accessibilityLabel("Import items from JSON")

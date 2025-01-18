@@ -12,8 +12,8 @@ func noItems(_ message :String) -> some View {
 struct ItemButton<I,E> :View where I : Item, I : PersistentModel, E : View {
   @Environment(\.modelContext) var modelContext
   @State private var newItem: I? = nil
-  private var mkItem: () -> I
-  private var mkView: (I) -> E
+  var mkItem: () -> I
+  var mkView: (I) -> E
 
   var body: some View {
     Button(action: {

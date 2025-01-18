@@ -97,24 +97,6 @@ struct WatchCurrentView: View {
   }
 }
 
-struct NewWatchItemButton: View {
-  @Environment(\.modelContext) var modelContext
-  @State private var newItem: WatchItem? = nil
-
-  var body: some View {
-    Button(action: {
-      let item = WatchItem(created: .now, format: .film, title: "")
-      modelContext.insert(item)
-      newItem = item
-    }) {
-      Image(systemName: "plus")
-    }
-    .navigationDestination(item: $newItem) { item in
-      WatchItemView(item: item).onDisappear { newItem = nil }
-    }
-  }
-}
-
 struct WatchView: View {
   @Environment(\.modelContext) var modelContext
 
@@ -139,7 +121,10 @@ struct WatchView: View {
           Toggle(isOn: $showHistory) {
             Image(systemName: "calendar")
           }
-          NewWatchItemButton()
+          ItemButton(
+            mkItem: { WatchItem(created: .now, format: .film, title: "") },
+            mkView: { WatchItemView(item: $0) }
+          )
           Button(action: { showImport = true }) {
             Image(systemName: "tray.and.arrow.down")
           }.accessibilityLabel("Import items from JSON")
