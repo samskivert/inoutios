@@ -41,24 +41,8 @@ struct PlayHistoryList: View {
   )
   var completed: [PlayItem]
 
-  var completedByYear: [(Int, [PlayItem])] {
-    let calendar = Calendar.current
-    let byyear = Dictionary(
-      grouping: completed, by: { calendar.component(.year, from: $0.completed!) }
-    )
-    return Array(byyear.keys).sorted(by: { $0 > $1 }).map { year in
-      (year, Array(byyear[year]!))
-    }
-  }
-
   var body: some View {
-    if completed.isEmpty {
-      noItems("No completed items")
-    } else {
-      ForEach(completedByYear, id: \.0) { year, items in
-        playSection("Played in \(year)", items)
-      }
-    }
+    HistoryList(completed: completed, verbed: "Played", mkView: { PlayItemView(item: $0) })
   }
 }
 
@@ -167,10 +151,5 @@ struct PlayView: View {
 }
 
 #Preview {
-  let config = ModelConfiguration(isStoredInMemoryOnly: true)
-  let container = try! ModelContainer(for: PlayItem.self, configurations: config)
-  for item in testPlayItems {
-    container.mainContext.insert(item)
-  }
-  return PlayView().modelContainer(container)
+  PlayView().modelContainer(setupPreviewModelContainer())
 }

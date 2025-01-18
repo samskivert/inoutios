@@ -36,24 +36,8 @@ struct ReadHistoryList: View {
   )
   var completed: [ReadItem]
 
-  var completedByYear: [(Int, [ReadItem])] {
-    let calendar = Calendar.current
-    let byyear = Dictionary(
-      grouping: completed, by: { calendar.component(.year, from: $0.completed!) }
-    )
-    return Array(byyear.keys).sorted(by: { $0 > $1 }).map { year in
-      (year, Array(byyear[year]!))
-    }
-  }
-
   var body: some View {
-    if completed.isEmpty {
-      noItems("No completed items")
-    } else {
-      ForEach(completedByYear, id: \.0) { year, items in
-        readSection("Readed in \(year)", items)
-      }
-    }
+    HistoryList(completed: completed, verbed: "Read", mkView: { ReadItemView(item: $0) })
   }
 }
 
@@ -162,10 +146,5 @@ struct ReadView: View {
 }
 
 #Preview {
-  let config = ModelConfiguration(isStoredInMemoryOnly: true)
-  let container = try! ModelContainer(for: ReadItem.self, configurations: config)
-  for item in testReadItems {
-    container.mainContext.insert(item)
-  }
-  return ReadView().modelContainer(container)
+  ReadView().modelContainer(setupPreviewModelContainer())
 }

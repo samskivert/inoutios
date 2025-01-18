@@ -36,24 +36,8 @@ struct ListenHistoryList: View {
   )
   var completed: [ListenItem]
 
-  var completedByYear: [(Int, [ListenItem])] {
-    let calendar = Calendar.current
-    let byyear = Dictionary(
-      grouping: completed, by: { calendar.component(.year, from: $0.completed!) }
-    )
-    return Array(byyear.keys).sorted(by: { $0 > $1 }).map { year in
-      (year, Array(byyear[year]!))
-    }
-  }
-
   var body: some View {
-    if completed.isEmpty {
-      noItems("No completed items")
-    } else {
-      ForEach(completedByYear, id: \.0) { year, items in
-        listenSection("Listened in \(year)", items)
-      }
-    }
+    HistoryList(completed: completed, verbed: "Listened", mkView: { ListenItemView(item: $0) })
   }
 }
 
@@ -118,7 +102,6 @@ struct ListenView: View {
         }
       }
       .toolbar(content: {
-        // ToolbarItem(placement: .navigationBarTrailing)
         ToolbarItemGroup(placement: .automatic) {
           Toggle(isOn: $showHistory) {
             Image(systemName: "calendar")
@@ -164,10 +147,5 @@ struct ListenView: View {
 }
 
 #Preview {
-  let config = ModelConfiguration(isStoredInMemoryOnly: true)
-  let container = try! ModelContainer(for: ListenItem.self, configurations: config)
-  for item in testListenItems {
-    container.mainContext.insert(item)
-  }
-  return ListenView().modelContainer(container)
+  ListenView().modelContainer(setupPreviewModelContainer())
 }
