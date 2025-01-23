@@ -12,6 +12,15 @@ enum WatchType: String, Codable, CaseIterable, Identifiable, CustomStringConvert
   var description: String { rawValue }
 }
 
+func watchIcon (_ type :WatchType) -> Icon {
+  switch type {
+  case .show: .show
+  case .film: .film
+  case .video: .video
+  case .other: .otherWatch
+  }
+}
+
 extension SchemaV1 {
   @Model
   class WatchItem: Identifiable, Consumable {
@@ -34,14 +43,7 @@ extension SchemaV1 {
     var abandoned: Bool = false
 
     var subtitle :String? { director }
-    var icon :Icon {
-      switch format {
-      case .show: .show
-      case .film: .film
-      case .video: .video
-      case .other: .otherWatch
-      }
-    }
+    var icon :Icon { watchIcon(format) }
     var extraIcon :Icon? { nil }
     var ratingIcon: String? { if abandoned { "😴" } else { rating.map({ $0.emoji }) } }
 

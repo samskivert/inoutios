@@ -12,6 +12,15 @@ enum ReadType: String, Codable, CaseIterable, Identifiable, CustomStringConverti
   var description: String { rawValue }
 }
 
+func readIcon (_ type :ReadType) -> Icon {
+  switch type {
+  case .article: .article
+  case .book: .book
+  case .paper: .paper
+  case .audiobook: .audiobook
+  }
+}
+
 extension SchemaV1 {
   @Model
   class ReadItem: Identifiable, Consumable, Item {
@@ -34,14 +43,7 @@ extension SchemaV1 {
     var abandoned: Bool = false
 
     var subtitle :String? { author }
-    var icon :Icon {
-      switch format {
-      case .article: .article
-      case .book: .book
-      case .paper: .paper
-      case .audiobook: .audiobook
-      }
-    }
+    var icon :Icon { readIcon(format) }
     var extraIcon :Icon? { nil }
     var ratingIcon: String? { if abandoned { "😴" } else { rating.map({ $0.emoji }) } }
 

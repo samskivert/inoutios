@@ -11,7 +11,7 @@ struct PlayItemView : View {
       Picker("Platform", selection: $item.platform) {
         ForEach(Platform.allCases) { option in
           HStack {
-            playItemIcon(option)
+            icon(playIcon(option))
             Text(String(describing: option))
           }
         }

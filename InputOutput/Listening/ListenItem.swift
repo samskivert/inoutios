@@ -12,6 +12,15 @@ enum ListenType: String, Codable, CaseIterable, Identifiable, CustomStringConver
   var description: String { rawValue }
 }
 
+func listenIcon (_ type :ListenType) -> Icon {
+  switch type {
+  case .album: .album
+  case .song: .song
+  case .podcast: .podcast
+  case .other: .otherListen
+  }
+}
+
 extension SchemaV1 {
   @Model
   class ListenItem: Identifiable, Consumable {
@@ -34,14 +43,7 @@ extension SchemaV1 {
     var abandoned: Bool = false
 
     var subtitle :String? { artist }
-    var icon :Icon {
-      switch format {
-      case .album: .album
-      case .song: .song
-      case .podcast: .podcast
-      case .other: .otherListen
-      }
-    }
+    var icon :Icon { listenIcon(format) }
     var extraIcon :Icon? { nil }
     var ratingIcon :String? { if abandoned { "😴" } else { rating.map({ $0.emoji }) } }
 

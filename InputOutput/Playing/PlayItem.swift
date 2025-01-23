@@ -5,6 +5,7 @@ enum Platform: String, Codable, CaseIterable, Identifiable, CustomStringConverti
   case pc = "PC"
   case table = "Tabletop"
   case mobile = "Mobile"
+  case vr = "VR"
 
   case nswitch = "Switch"
   case n3ds = "3DS"
@@ -30,6 +31,19 @@ enum Platform: String, Codable, CaseIterable, Identifiable, CustomStringConverti
   var description: String { rawValue }
 }
 
+func playIcon (_ platform :Platform) -> Icon {
+  switch platform {
+  case .pc: .pc
+  case .table: .table
+  case .mobile: .mobile
+  case .vr: .vr
+  case .nswitch, .vita: .controller1
+  case .n3ds, .wiiu, .wii, .cube, .n64, .gameboy, .dcast: .controller2
+  case .ps1, .ps2, .ps3, .ps4, .ps5: .playstation
+  case .xbox: .xbox
+  }
+}
+
 extension SchemaV1 {
   @Model
   class PlayItem: Identifiable, Consumable {
@@ -51,17 +65,7 @@ extension SchemaV1 {
     var sawCredits: Bool = false
 
     var subtitle :String? { platform.label }
-    var icon :Icon {
-      switch platform {
-      case .pc: .pc
-      case .table: .table
-      case .mobile: .mobile
-      case .nswitch, .vita: .controller1
-      case .n3ds, .wiiu, .wii, .cube, .n64, .gameboy, .dcast: .controller2
-      case .ps1, .ps2, .ps3, .ps4, .ps5: .playstation
-      case .xbox: .xbox
-      }
-    }
+    var icon :Icon { playIcon(platform) }
     var extraIcon :Icon? { if sawCredits { .sawCredits } else { nil } }
     var ratingIcon: String? { rating.map({ $0.emoji }) }
 

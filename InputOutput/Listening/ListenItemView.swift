@@ -12,7 +12,7 @@ struct ListenItemView : View {
       Picker("Type", selection: $item.format) {
         ForEach(ListenType.allCases) { option in
           HStack {
-            listenItemIcon(option)
+            icon(listenIcon(option))
             Text(String(describing: option))
           }
         }

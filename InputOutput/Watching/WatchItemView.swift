@@ -12,7 +12,7 @@ struct WatchItemView : View {
       Picker("Type", selection: $item.format) {
         ForEach(WatchType.allCases) { option in
           HStack {
-            watchItemIcon(option)
+            icon(watchIcon(option))
             Text(String(describing: option))
           }
         }
