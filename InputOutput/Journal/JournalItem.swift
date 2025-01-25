@@ -37,26 +37,6 @@ extension SchemaV1 {
 
     var description: String { "\(year)-\(month)-\(day): \(entries.count) entries" }
 
-    static func overwrite(_ modelContext :ModelContext, _ item :JournalItem) {
-      let year = item.year
-      let month = item.month
-      let day = item.day
-      let fetch = FetchDescriptor<JournalItem>(
-        predicate: #Predicate { item in
-          item.year == year && item.month == month && item.day == day
-        })
-      do {
-        let results = try modelContext.fetch(fetch)
-        print("Deleting \(results.count) old results")
-        for result in results {
-          modelContext.delete(result)
-        }
-        modelContext.insert(item)
-      } catch {
-        print("Error fetching JournalItem: \(error)")
-      }
-    }
-
     static func resolve(with modelContext: ModelContext, date: Date) -> JournalItem {
       let year = Calendar.current.component(.year, from: date)
       let month = Calendar.current.component(.month, from: date)
