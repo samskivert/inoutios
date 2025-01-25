@@ -15,6 +15,15 @@ struct InputOutputTests {
       "2": {
         "text": "Started testing for a new Yohoho! release"
       },
+      "7": {
+        "text": "Investigated the poor Poor Carp"
+      },
+      "8": {
+        "text": "Fixed more bugs!"
+      },
+      "9": {
+        "text": "Played a bit more \\"Dark Cloud 2\\""
+      },
       "3": {
         "text": "Testy testopolis"
       },
@@ -26,15 +35,6 @@ struct InputOutputTests {
       },
       "6": {
         "text": "More testing; strategized about our upcoming transition to open beta"
-      },
-      "7": {
-        "text": "Investigated the poor Poor Carp"
-      },
-      "8": {
-        "text": "Fixed more bugs!"
-      },
-      "9": {
-        "text": "Played a bit more \\"Dark Cloud 2\\""
       }
     },
     "id": "0003-06-23"
@@ -59,6 +59,7 @@ struct InputOutputTests {
         "text": "Participated in alpha planning meeting"
       }
     },
+    "order": ["2", "1"],
     "id": "2002-05-30"
   }]
   """

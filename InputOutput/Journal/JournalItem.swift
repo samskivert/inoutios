@@ -37,6 +37,26 @@ extension SchemaV1 {
 
     var description: String { "\(year)-\(month)-\(day): \(entries.count) entries" }
 
+    static func overwrite(_ modelContext :ModelContext, _ item :JournalItem) {
+      let year = item.year
+      let month = item.month
+      let day = item.day
+      let fetch = FetchDescriptor<JournalItem>(
+        predicate: #Predicate { item in
+          item.year == year && item.month == month && item.day == day
+        })
+      do {
+        let results = try modelContext.fetch(fetch)
+        print("Deleting \(results.count) old results")
+        for result in results {
+          modelContext.delete(result)
+        }
+        modelContext.insert(item)
+      } catch {
+        print("Error fetching JournalItem: \(error)")
+      }
+    }
+
     static func resolve(with modelContext: ModelContext, date: Date) -> JournalItem {
       let year = Calendar.current.component(.year, from: date)
       let month = Calendar.current.component(.month, from: date)
@@ -46,7 +66,18 @@ extension SchemaV1 {
           item.year == year && item.month == month && item.day == day
         })
       do {
-        if let result = try modelContext.fetch(fetch).first {
+        var results = try modelContext.fetch(fetch)
+        if results.count > 1 {
+          print("Duplicate JournalItem for day \(date): \(results.count)")
+          for result in results {
+            if result.entries.isEmpty {
+              print("Deleting blank duplicate for \(date)")
+              modelContext.delete(result)
+            }
+          }
+          results.removeAll(where: { $0.entries.isEmpty })
+        }
+        if let result = results.first {
           // print("Loaded item: \(result.year) \(result.month) \(result.day) \(result.entries)")
           return result
         }

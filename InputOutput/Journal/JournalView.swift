@@ -99,6 +99,7 @@ struct JournalView: View {
   @State private var date: Date = .now
   @State private var searchText: String = ""
   @State private var showHistory: Bool = false
+  @State private var showImport: Bool = false
   private var showSearch: Bool { searchText != "" && searchText.count > 1 }
 
   var body: some View {
@@ -109,6 +110,9 @@ struct JournalView: View {
             Toggle(isOn: $showHistory) {
               Image(systemName: "calendar")
             }
+            Button(action: { showImport = true }) {
+              Image(systemName: "tray.and.arrow.down")
+            }.accessibilityLabel("Import items from JSON")
           }
         })
         #if os(iOS)
@@ -117,6 +121,27 @@ struct JournalView: View {
         #endif
         .navigationTitle("Journal")
         .searchable(text: $searchText)
+        .fileImporter(isPresented: $showImport, allowedContentTypes: [.json]) { result in
+          switch result {
+          case .success(let url):
+            let decoder = JSONDecoder()
+            decoder.keyDecodingStrategy = .convertFromSnakeCase
+            print("Importing from \(url)...")
+            guard url.startAccessingSecurityScopedResource() else {
+              return
+            }
+            do {
+              let items = try JournalImporter().importItems(Data(contentsOf: url))
+              for item in items {
+                JournalItem.overwrite(modelContext, item)
+              }
+            } catch {
+              print("Error decoding JSON: \(error)")
+            }
+          case .failure(let error):
+            print("Error importing JSON: \(error)")
+          }
+        }
     }
   }
 }
