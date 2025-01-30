@@ -21,7 +21,7 @@ func watchIcon (_ type :WatchType) -> Icon {
   }
 }
 
-extension SchemaV1 {
+extension SchemaV3 {
   @Model
   class WatchItem: Identifiable, Consumable {
     // Item properties
@@ -79,7 +79,7 @@ extension SchemaV1 {
   }
 }
 
-typealias WatchItem = SchemaV1.WatchItem
+typealias WatchItem = SchemaV3.WatchItem
 
 var testWatchItems: [WatchItem] {
   [

@@ -1,6 +1,45 @@
 import SwiftData
 import SwiftUI
 
+func itemDateFormatter() -> DateFormatter {
+  let formatter = DateFormatter()
+  formatter.dateStyle = .medium
+  formatter.timeStyle = .none
+  return formatter
+}
+
+struct ItemDateLabel: View {
+  var date :Date
+  private let formatter = itemDateFormatter()
+
+  var body: some View {
+    Text(formatter.string(from: date))
+  }
+}
+
+struct SearchResultsList: View {
+  private var query :String
+  @Query private var matchingItems: [JournalItem]
+  
+  init(query :String) {
+    self.query = query
+    _matchingItems = Query(
+      filter: JournalItem.searchPredicate(query: query),
+      sort: [SortDescriptor(\.when, order: .reverse)])
+  }
+
+  var body: some View {
+    Section(header: Text("Items matching '\(query)': \(matchingItems.count)")) {
+      ForEach(matchingItems) { item in
+        ItemDateLabel(date: item.date)
+        ForEach(item.entries.filter({ $0.matches(query) })) { entry in
+          ReadonlyJournalEntryRow(entry: entry)
+        }
+      }
+    }
+  }
+}
+
 struct EntriesList: View {
   @Bindable var item: JournalItem
   @Binding var newEntryId: UUID?
@@ -14,7 +53,10 @@ struct EntriesList: View {
           entry: $entry,
           isEditing: entry.id == newEntryId,
           onDelete: deleteEntry,
-          onEditingDone: { newEntryId = nil }
+          onEditingDone: {
+            newEntryId = nil
+            item.updateKeywords()
+          }
         )
       }
       .onMove(perform: { from, to in
@@ -22,6 +64,7 @@ struct EntriesList: View {
       })
       .onDelete(perform: { offsets in
         item.entries.remove(atOffsets: offsets)
+        item.updateKeywords()
       })
     }
   }
@@ -29,6 +72,7 @@ struct EntriesList: View {
   private func deleteEntry(id: UUID) {
     withAnimation {
       item.entries.removeAll(where: { $0.id == id })
+      item.updateKeywords()
     }
   }
 }
@@ -36,22 +80,16 @@ struct EntriesList: View {
 struct SingleDayView: View {
   @Environment(\.modelContext) var modelContext
 
-  private var formatter = DateFormatter()
+  private var formatter = itemDateFormatter()
   @State private var date = Date.now
   @State private var newEntryId: UUID?
   @State private var showDatePicker = false
-
-  init() {
-    formatter.dateStyle = .medium
-    formatter.timeStyle = .none
-  }
 
   private var item: JournalItem {
     JournalItem.resolve(with: modelContext, date: date)
   }
 
   var body: some View {
-    List {
       Section(
         header: HStack {
           Button(action: { showDatePicker.toggle() }) {
@@ -70,7 +108,7 @@ struct SingleDayView: View {
             }) {
               Image(systemName: "arrowtriangle.left.fill")
             }.buttonStyle(PlainButtonStyle())
-            Text(formatter.string(from: date))
+            ItemDateLabel(date: date)
             Button(action: {
               date = Calendar.current.date(byAdding: .day, value: 1, to: date)!
             }) {
@@ -89,34 +127,41 @@ struct SingleDayView: View {
       ) {
         EntriesList(item: self.item, newEntryId: $newEntryId)
       }
-    }
+  }
+}
+
+class JournalViewState: ObservableObject {
+  @Published var rawSearchText: String = ""
+  @Published var searchText: String = ""
+
+  init() {
+    $rawSearchText
+      .debounce(for: .seconds(0.75), scheduler: RunLoop.main)
+      .assign(to: &$searchText)
   }
 }
 
 struct JournalView: View {
   @Environment(\.modelContext) var modelContext
 
-  @State private var date: Date = .now
-  @State private var searchText: String = ""
-  @State private var showHistory: Bool = false
-  private var showSearch: Bool { searchText != "" && searchText.count > 1 }
+  @StateObject var state = JournalViewState()
+  private var showSearch: Bool { state.searchText != "" }
 
   var body: some View {
     NavigationStack {
-      SingleDayView()
-        .toolbar(content: {
-          ToolbarItemGroup(placement: .automatic) {
-            Toggle(isOn: $showHistory) {
-              Image(systemName: "calendar")
-            }
-          }
-        })
-        #if os(iOS)
-          .navigationBarTitleDisplayMode(.inline)
-          .listStyle(GroupedListStyle())
-        #endif
-        .navigationTitle("Journal")
-        .searchable(text: $searchText)
+      List {
+        if showSearch {
+          SearchResultsList(query: state.searchText)
+        } else {
+          SingleDayView()
+        }
+      }
+      #if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+        .listStyle(GroupedListStyle())
+      #endif
+      .navigationTitle("Journal")
+      .searchable(text: $state.rawSearchText)
     }
   }
 }

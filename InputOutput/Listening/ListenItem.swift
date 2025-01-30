@@ -21,7 +21,7 @@ func listenIcon (_ type :ListenType) -> Icon {
   }
 }
 
-extension SchemaV1 {
+extension SchemaV3 {
   @Model
   class ListenItem: Identifiable, Consumable {
     // Item properties
@@ -79,7 +79,7 @@ extension SchemaV1 {
   }
 }
 
-typealias ListenItem = SchemaV1.ListenItem
+typealias ListenItem = SchemaV3.ListenItem
 
 var testListenItems: [ListenItem] {
   [

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-extension SchemaV1 {
+extension SchemaV3 {
   struct JournalEntry: Codable, Identifiable {
     var id = UUID()  // so SwiftUI can keep track of this in memory
     var text: String
@@ -11,40 +11,57 @@ extension SchemaV1 {
       case text
       case tags
     }
+    
+    func matches(_ query :String) -> Bool {
+      text.localizedStandardContains(query)
+    }
   }
 
   @Model
   class JournalItem: Identifiable, CustomStringConvertible {
     var id: UUID = UUID()
-    var year: Int = 1970
-    var month: Int = 1
-    var day: Int = 1
+    var when :Int = 19700101
     var entries: [JournalEntry] = []
+    var keywords :String = ""
 
     init(
       id: UUID = UUID(),
-      year: Int,
-      month: Int,
-      day: Int,
+      when: Int,
       entries: [JournalEntry] = []
     ) {
       self.id = id
-      self.year = year
-      self.month = month
-      self.day = day
+      self.when = when
       self.entries = entries
+      self.keywords = computeKeywords(entries)
     }
 
+    var year: Int { when / 10000 }
+    var month: Int { (when / 100) % 100 }
+    var day: Int { when % 100 }
     var description: String { "\(year)-\(month)-\(day): \(entries.count) entries" }
+
+    var date :Date {
+      var components = DateComponents()
+      components.year = year
+      components.month = month
+      components.day = day
+      return Calendar.current.date(from: components)!
+    }
+
+    func updateKeywords () {
+      let keywords = computeKeywords(entries)
+      if keywords != self.keywords {
+        self.keywords = keywords // presumably this triggers some SwiftData sync magic
+      }
+    }
 
     static func resolve(with modelContext: ModelContext, date: Date) -> JournalItem {
       let year = Calendar.current.component(.year, from: date)
       let month = Calendar.current.component(.month, from: date)
       let day = Calendar.current.component(.day, from: date)
+      let when = toWhen(year, month, day)
       let fetch = FetchDescriptor<JournalItem>(
-        predicate: #Predicate { item in
-          item.year == year && item.month == month && item.day == day
-        })
+        predicate: #Predicate { item in item.when == when })
       do {
         var results = try modelContext.fetch(fetch)
         if results.count > 1 {
@@ -64,30 +81,104 @@ extension SchemaV1 {
       } catch {
         print("Error fetching JournalItem: \(error)")
       }
-      let instance = JournalItem(
-        year: year, month: month, day: day, entries: []
-      )
-      print("Creating new item \(year) \(month) \(day)")
+      let instance = JournalItem(when: when, entries: [])
+      print("Creating new item \(year) \(month) \(day): \(when)")
       modelContext.insert(instance)
       return instance
+    }
+
+    static func searchPredicate(query: String) -> Predicate<JournalItem> {
+      #Predicate<JournalItem> { item in
+        item.keywords.localizedStandardContains(query)
+      }
     }
   }
 }
 
-typealias JournalEntry = SchemaV1.JournalEntry
-typealias JournalItem = SchemaV1.JournalItem
+extension SchemaV2 {
+  typealias JournalEntry = SchemaV3.JournalEntry
+
+  @Model
+  class JournalItem: Identifiable {
+    var id: UUID = UUID()
+    var year: Int = 1970
+    var month: Int = 1
+    var day: Int = 1
+    var when :Int = 19700101
+    var entries: [JournalEntry] = []
+    var keywords :String = ""
+
+    init(
+      id: UUID = UUID(),
+      year: Int,
+      month: Int,
+      day: Int,
+      entries: [JournalEntry] = []
+    ) {
+      self.id = id
+      self.year = year
+      self.month = month
+      self.day = day
+      self.entries = entries
+    }
+  }
+}
+
+extension SchemaV1 {
+  typealias JournalEntry = SchemaV3.JournalEntry
+
+  @Model
+  class JournalItem: Identifiable {
+    var id: UUID = UUID()
+    var year: Int = 1970
+    var month: Int = 1
+    var day: Int = 1
+    var entries: [JournalEntry] = []
+    
+    init(
+      id: UUID = UUID(),
+      year: Int,
+      month: Int,
+      day: Int,
+      entries: [JournalEntry] = []
+    ) {
+      self.id = id
+      self.year = year
+      self.month = month
+      self.day = day
+      self.entries = entries
+    }
+  }
+}
+
+typealias JournalEntry = SchemaV3.JournalEntry
+typealias JournalItem = SchemaV3.JournalItem
+
+func toWhen(_ year :Int, _ month :Int, _ day :Int) -> Int { year * 10000 + month * 100 + day }
+
+func computeKeywords (_ entries :[JournalEntry]) -> String {
+  var words :Set<String> = []
+  for entry in entries {
+    for word in entry.text.split(separator: " ") {
+      if word.count > 2 {
+        words.insert(String(word).lowercased())
+      }
+    }
+  }
+  return words.joined(separator: " ")
+}
 
 var testJournalItems: [JournalItem] {
   [
     JournalItem(
-      year: 2025, month: 1, day: 23,
+      when: 20250123,
       entries: [
         JournalEntry(text: "Worked on iOS I/O", tags: ["IO"]),
         JournalEntry(text: "Taxied Remy to/from school"),
         JournalEntry(text: "Listened to Jon Bishop set, nostalgic!"),
       ]),
     JournalItem(
-      year: 2025, month: 1, day: 22,
+      when: 20250122,
       entries: [
         JournalEntry(text: "Wednesday morning shenanigans"),
         JournalEntry(text: "More work on iOS I/O", tags: ["IO"]),

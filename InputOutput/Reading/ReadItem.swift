@@ -21,7 +21,7 @@ func readIcon (_ type :ReadType) -> Icon {
   }
 }
 
-extension SchemaV1 {
+extension SchemaV3 {
   @Model
   class ReadItem: Identifiable, Consumable, Item {
     // Item properties
@@ -79,7 +79,7 @@ extension SchemaV1 {
   }
 }
 
-typealias ReadItem = SchemaV1.ReadItem
+typealias ReadItem = SchemaV3.ReadItem
 
 var testReadItems: [ReadItem] {
   [

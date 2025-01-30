@@ -44,7 +44,7 @@ func playIcon (_ platform :Platform) -> Icon {
   }
 }
 
-extension SchemaV1 {
+extension SchemaV3 {
   @Model
   class PlayItem: Identifiable, Consumable {
     // Item properties
@@ -99,7 +99,7 @@ extension SchemaV1 {
   }
 }
 
-typealias PlayItem = SchemaV1.PlayItem
+typealias PlayItem = SchemaV3.PlayItem
 
 var testPlayItems: [PlayItem] {
   [
