@@ -56,10 +56,7 @@ extension SchemaV3 {
     }
 
     static func resolve(with modelContext: ModelContext, date: Date) -> JournalItem {
-      let year = Calendar.current.component(.year, from: date)
-      let month = Calendar.current.component(.month, from: date)
-      let day = Calendar.current.component(.day, from: date)
-      let when = toWhen(year, month, day)
+      let when = toWhen(date)
       let fetch = FetchDescriptor<JournalItem>(
         predicate: #Predicate { item in item.when == when })
       do {
@@ -82,7 +79,7 @@ extension SchemaV3 {
         print("Error fetching JournalItem: \(error)")
       }
       let instance = JournalItem(when: when, entries: [])
-      print("Creating new item \(year) \(month) \(day): \(when)")
+      print("Creating new item: \(when)")
       modelContext.insert(instance)
       return instance
     }
@@ -156,6 +153,13 @@ typealias JournalItem = SchemaV3.JournalItem
 
 func toWhen(_ year :Int, _ month :Int, _ day :Int) -> Int { year * 10000 + month * 100 + day }
 
+func toWhen(_ date :Date) -> Int {
+  let year = Calendar.current.component(.year, from: date)
+  let month = Calendar.current.component(.month, from: date)
+  let day = Calendar.current.component(.day, from: date)
+  return toWhen(year, month, day)
+}
+
 func computeKeywords (_ entries :[JournalEntry]) -> String {
   var words :Set<String> = []
   for entry in entries {
@@ -171,7 +175,7 @@ func computeKeywords (_ entries :[JournalEntry]) -> String {
 var testJournalItems: [JournalItem] {
   [
     JournalItem(
-      when: 20250123,
+      when: toWhen(.now),
       entries: [
         JournalEntry(text: "Worked on iOS I/O", tags: ["IO"]),
         JournalEntry(text: "Taxied Remy to/from school"),

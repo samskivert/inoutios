@@ -1,25 +1,12 @@
 import SwiftData
 import SwiftUI
 
-func itemDateFormatter() -> DateFormatter {
-  let formatter = DateFormatter()
-  formatter.dateStyle = .medium
-  formatter.timeStyle = .none
-  return formatter
-}
-
-struct ItemDateLabel: View {
-  var date :Date
-  private let formatter = itemDateFormatter()
-
-  var body: some View {
-    Text(formatter.string(from: date))
-  }
-}
-
 struct SearchResultsList: View {
-  private var query :String
+  @Environment(\.dismissSearch) private var dismissSearch
+  @EnvironmentObject var state :JournalViewState
+
   @Query private var matchingItems: [JournalItem]
+  private var query :String
   
   init(query :String) {
     self.query = query
@@ -31,7 +18,17 @@ struct SearchResultsList: View {
   var body: some View {
     Section(header: Text("Items matching '\(query)': \(matchingItems.count)")) {
       ForEach(matchingItems) { item in
-        ItemDateLabel(date: item.date)
+        HStack {
+          ItemDateLabel(date: item.date)
+          Button(action: {
+            state.date = item.date
+            // clear this directly otherwise we have to wait 0.75 seconds for the debounce
+            state.searchText = ""
+            dismissSearch()
+          }) {
+            Image(systemName: "chevron.right.circle")
+          }.buttonStyle(PlainButtonStyle())
+        }
         ForEach(item.entries.filter({ $0.matches(query) })) { entry in
           ReadonlyJournalEntryRow(entry: entry)
         }
@@ -46,7 +43,7 @@ struct EntriesList: View {
 
   var body: some View {
     if item.entries.isEmpty {
-      Text("No entries.")
+      Text("No entries.").padding([.bottom], 5)
     } else {
       ForEach($item.entries) { $entry in
         JournalEntryRow(
@@ -79,57 +76,63 @@ struct EntriesList: View {
 
 struct SingleDayView: View {
   @Environment(\.modelContext) var modelContext
+  @EnvironmentObject var state :JournalViewState
 
-  private var formatter = itemDateFormatter()
-  @State private var date = Date.now
   @State private var newEntryId: UUID?
-  @State private var showDatePicker = false
+  private var formatter = itemDateFormatter()
 
   private var item: JournalItem {
-    JournalItem.resolve(with: modelContext, date: date)
+    JournalItem.resolve(with: modelContext, date: state.date)
   }
 
   var body: some View {
-      Section(
-        header: HStack {
-          Button(action: { date = Date.now }) {
-            Image(systemName: "calendar.circle")
-          }.buttonStyle(PlainButtonStyle())
-          Spacer()
-          Button(action: {
-            date = Calendar.current.date(byAdding: .day, value: -1, to: date)!
-          }) {
-            Image(systemName: "arrowtriangle.left.fill")
-          }.buttonStyle(PlainButtonStyle())
-          DatePicker(
-            "",
-            selection: $date,
-            displayedComponents: .date
-          )
-          .labelsHidden()
-          Button(action: {
-            date = Calendar.current.date(byAdding: .day, value: 1, to: date)!
-          }) {
-            Image(systemName: "arrowtriangle.right.fill")
-          }.buttonStyle(PlainButtonStyle())
-          Spacer()
-          Button(action: {
-            let entry = JournalEntry(text: "New item")
-            newEntryId = entry.id
-            self.item.entries.append(entry)
-          }) {
-            Image(systemName: "plus")
-          }.buttonStyle(PlainButtonStyle())
-        }
-      ) {
-        EntriesList(item: self.item, newEntryId: $newEntryId)
+    Section(
+      header: HStack {
+        Button(action: { state.date = Date.now }) {
+          Image(systemName: "calendar.circle")
+        }.buttonStyle(PlainButtonStyle())
+        Button(action: {
+          state.date = Calendar.current.date(byAdding: .day, value: -1, to: state.date)!
+        }) {
+          Image(systemName: "arrowtriangle.left.fill")
+        }.buttonStyle(PlainButtonStyle())
+        ItemDateLabel(date: item.date)
+        Button(action: {
+          state.date = Calendar.current.date(byAdding: .day, value: 1, to: state.date)!
+        }) {
+          Image(systemName: "arrowtriangle.right.fill")
+        }.buttonStyle(PlainButtonStyle())
+        Spacer()
+        DatePicker(
+          "",
+          selection: $state.date,
+          displayedComponents: .date
+        )
+        .labelsHidden()
       }
+    ) {
+      EntriesList(item: self.item, newEntryId: $newEntryId)
+      HStack {
+        Spacer()
+        Button(action: addItem) {
+          Label("Add item", systemImage: "plus.circle")
+        }.buttonStyle(PlainButtonStyle())
+        Spacer()
+      }.padding([.top], 5)
+    }
+  }
+  
+  private func addItem () {
+    let entry = JournalEntry(text: "New item")
+    newEntryId = entry.id
+    self.item.entries.append(entry)
   }
 }
 
 class JournalViewState: ObservableObject {
   @Published var rawSearchText: String = ""
   @Published var searchText: String = ""
+  @Published var date = Date.now
 
   init() {
     $rawSearchText
@@ -160,6 +163,7 @@ struct JournalView: View {
       .navigationTitle("Journal")
       .searchable(text: $state.rawSearchText)
     }
+    .environmentObject(state)
   }
 }
 
