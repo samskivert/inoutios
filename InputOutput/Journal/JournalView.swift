@@ -43,7 +43,7 @@ struct EntriesList: View {
 
   var body: some View {
     if item.entries.isEmpty {
-      Text("No entries.").padding([.bottom], 5)
+      Text("No entries.").padding([.bottom, .top], 5)
     } else {
       ForEach($item.entries) { $entry in
         JournalEntryRow(
@@ -118,7 +118,7 @@ struct SingleDayView: View {
           Label("Add item", systemImage: "plus.circle")
         }.buttonStyle(PlainButtonStyle())
         Spacer()
-      }.padding([.top], 5)
+      }.padding([.top, .bottom], 5)
     }
   }
   
