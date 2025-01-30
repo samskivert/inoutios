@@ -92,29 +92,26 @@ struct SingleDayView: View {
   var body: some View {
       Section(
         header: HStack {
-          Button(action: { showDatePicker.toggle() }) {
-            Image(systemName: "calendar")
+          Button(action: { date = Date.now }) {
+            Image(systemName: "calendar.circle")
           }.buttonStyle(PlainButtonStyle())
-          if showDatePicker {
-            DatePicker(
-              "",
-              selection: $date,
-              displayedComponents: .date
-            )
-            .labelsHidden()
-          } else {
-            Button(action: {
-              date = Calendar.current.date(byAdding: .day, value: -1, to: date)!
-            }) {
-              Image(systemName: "arrowtriangle.left.fill")
-            }.buttonStyle(PlainButtonStyle())
-            ItemDateLabel(date: date)
-            Button(action: {
-              date = Calendar.current.date(byAdding: .day, value: 1, to: date)!
-            }) {
-              Image(systemName: "arrowtriangle.right.fill")
-            }.buttonStyle(PlainButtonStyle())
-          }
+          Spacer()
+          Button(action: {
+            date = Calendar.current.date(byAdding: .day, value: -1, to: date)!
+          }) {
+            Image(systemName: "arrowtriangle.left.fill")
+          }.buttonStyle(PlainButtonStyle())
+          DatePicker(
+            "",
+            selection: $date,
+            displayedComponents: .date
+          )
+          .labelsHidden()
+          Button(action: {
+            date = Calendar.current.date(byAdding: .day, value: 1, to: date)!
+          }) {
+            Image(systemName: "arrowtriangle.right.fill")
+          }.buttonStyle(PlainButtonStyle())
           Spacer()
           Button(action: {
             let entry = JournalEntry(text: "New item")
