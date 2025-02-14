@@ -28,6 +28,7 @@ struct ListenItemView : View {
           Text(String(describing: option))
         }
       }
+      TextField("Notes", text: $item.notes ?? "", axis: .vertical).lineLimit(3...5)
       if item.isProtracted {
         Toggle(isOn: $item.abandoned) {
           Text("Abandoned")

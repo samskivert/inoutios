@@ -28,6 +28,7 @@ struct ReadItemView : View {
           Text(String(describing: option))
         }
       }
+      TextField("Notes", text: $item.notes ?? "", axis: .vertical).lineLimit(3...5)
       Toggle(isOn: $item.abandoned) {
         Text("Abandoned")
       }
