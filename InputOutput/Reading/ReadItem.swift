@@ -21,9 +21,11 @@ func readIcon (_ type :ReadType) -> Icon {
   }
 }
 
-extension SchemaV3 {
+typealias ReadItem = SchemaLatest.ReadItem
+
+extension SchemaV4 {
   @Model
-  class ReadItem: Identifiable, Consumable, Item {
+  class ReadItem: Identifiable, Consumable {
     // Item properties
     var id: UUID = UUID()
     var created: Date = Date.now
@@ -31,6 +33,7 @@ extension SchemaV3 {
     var link: String?
     var started: Date?
     var completed: Date?
+    var notes: String?
 
     // Consumable properties
     var rating: Rating?
@@ -79,7 +82,25 @@ extension SchemaV3 {
   }
 }
 
-typealias ReadItem = SchemaV3.ReadItem
+extension SchemaV3 {
+  @Model
+  class ReadItem: Identifiable {
+    var id: UUID = UUID()
+    var created: Date = Date.now
+    var tags: [Tag] = []
+    var link: String?
+    var started: Date?
+    var completed: Date?
+    var rating: Rating?
+    var recommender: String?
+    var format: ReadType = ReadType.book
+    var title: String = ""
+    var author: String?
+    var abandoned: Bool = false
+
+    init() {}
+  }
+}
 
 var testReadItems: [ReadItem] {
   [

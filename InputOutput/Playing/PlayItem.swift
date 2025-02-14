@@ -44,7 +44,9 @@ func playIcon (_ platform :Platform) -> Icon {
   }
 }
 
-extension SchemaV3 {
+typealias PlayItem = SchemaLatest.PlayItem
+
+extension SchemaV4 {
   @Model
   class PlayItem: Identifiable, Consumable {
     // Item properties
@@ -54,6 +56,7 @@ extension SchemaV3 {
     var link: String?
     var started: Date?
     var completed: Date?
+    var notes: String?
 
     // Consumable properties
     var rating: Rating?
@@ -99,7 +102,24 @@ extension SchemaV3 {
   }
 }
 
-typealias PlayItem = SchemaV3.PlayItem
+extension SchemaV3 {
+  @Model
+  class PlayItem: Identifiable {
+    var id: UUID = UUID()
+    var created: Date = Date.now
+    var tags: [Tag] = []
+    var link: String? = nil
+    var started: Date? = nil
+    var completed: Date? = nil
+    var rating: Rating? = Rating.none
+    var recommender: String? = nil
+    var platform: Platform = Platform.pc
+    var title: String = ""
+    var sawCredits: Bool = false
+
+    init() {}
+  }
+}
 
 var testPlayItems: [PlayItem] {
   [

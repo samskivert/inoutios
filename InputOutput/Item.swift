@@ -50,6 +50,7 @@ protocol Item : AnyObject {
   var link: String? { get set }
   var started: Date? { get set }
   var completed: Date? { get set }
+  var notes: String? { get set }
 
   var title :String { get }
   var subtitle :String? { get }

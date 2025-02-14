@@ -21,7 +21,9 @@ func listenIcon (_ type :ListenType) -> Icon {
   }
 }
 
-extension SchemaV3 {
+typealias ListenItem = SchemaLatest.ListenItem
+
+extension SchemaV4 {
   @Model
   class ListenItem: Identifiable, Consumable {
     // Item properties
@@ -31,6 +33,7 @@ extension SchemaV3 {
     var link: String?
     var started: Date?
     var completed: Date?
+    var notes: String?
 
     // Consumable properties
     var rating: Rating?
@@ -79,7 +82,26 @@ extension SchemaV3 {
   }
 }
 
-typealias ListenItem = SchemaV3.ListenItem
+extension SchemaV3 {
+  @Model
+  class ListenItem: Identifiable {
+    var id: UUID = UUID()
+    var created: Date = Date.now
+    var tags: [Tag] = []
+    var link: String?
+    var started: Date?
+    var completed: Date?
+    var notes: String?
+    var rating: Rating?
+    var recommender: String?
+    var format: ListenType = ListenType.other
+    var title: String = ""
+    var artist: String?
+    var abandoned: Bool = false
+    
+    init () {}
+  }
+}
 
 var testListenItems: [ListenItem] {
   [

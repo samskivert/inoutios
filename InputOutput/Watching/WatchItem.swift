@@ -21,7 +21,9 @@ func watchIcon (_ type :WatchType) -> Icon {
   }
 }
 
-extension SchemaV3 {
+typealias WatchItem = SchemaLatest.WatchItem
+
+extension SchemaV4 {
   @Model
   class WatchItem: Identifiable, Consumable {
     // Item properties
@@ -31,6 +33,7 @@ extension SchemaV3 {
     var link: String?
     var started: Date?
     var completed: Date?
+    var notes: String?
 
     // Consumable properties
     var rating: Rating?
@@ -79,7 +82,25 @@ extension SchemaV3 {
   }
 }
 
-typealias WatchItem = SchemaV3.WatchItem
+extension SchemaV3 {
+  @Model
+  class WatchItem: Identifiable {
+    var id: UUID = UUID()
+    var created: Date = Date.now
+    var tags: [Tag] = []
+    var link: String?
+    var started: Date?
+    var completed: Date?
+    var rating: Rating?
+    var recommender: String?
+    var format: WatchType = WatchType.film
+    var title: String = ""
+    var director: String?
+    var abandoned: Bool = false
+
+    init() {}
+  }
+}
 
 var testWatchItems: [WatchItem] {
   [

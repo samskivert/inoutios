@@ -1,11 +1,21 @@
 import Foundation
 import SwiftData
 
-enum SchemaV3 : VersionedSchema {
-  static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 3)
+typealias SchemaLatest = SchemaV4
+
+enum SchemaV4 : VersionedSchema {
+  static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 4)
 
   static var models: [any PersistentModel.Type] {
-    return [JournalItem.self, ReadItem.self, WatchItem.self, PlayItem.self, ListenItem.self]
+    return [SchemaV4.JournalItem.self, SchemaV4.ReadItem.self, SchemaV4.WatchItem.self, SchemaV4.PlayItem.self, SchemaV4.ListenItem.self]
+  }
+}
+
+enum SchemaV3 : VersionedSchema {
+  static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 3)
+  
+  static var models: [any PersistentModel.Type] {
+    return [SchemaV3.JournalItem.self, SchemaV3.ReadItem.self, SchemaV3.WatchItem.self, SchemaV3.PlayItem.self, SchemaV3.ListenItem.self]
   }
 }
 
@@ -13,7 +23,7 @@ enum SchemaV2 : VersionedSchema {
   static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 2)
 
   static var models: [any PersistentModel.Type] {
-    return [JournalItem.self, SchemaV3.ReadItem.self, SchemaV3.WatchItem.self, SchemaV3.PlayItem.self, SchemaV3.ListenItem.self]
+    return [SchemaV2.JournalItem.self, SchemaV3.ReadItem.self, SchemaV3.WatchItem.self, SchemaV3.PlayItem.self, SchemaV3.ListenItem.self]
   }
 }
 
@@ -28,11 +38,11 @@ enum SchemaV1 : VersionedSchema {
 //// leaving this here for when we do need schema migration
 enum MigrationPlan: SchemaMigrationPlan {
   static var schemas: [any VersionedSchema.Type] {
-    [SchemaV1.self, SchemaV2.self, SchemaV3.self]
+    [SchemaV1.self, SchemaV2.self, SchemaV3.self, SchemaV4.self]
   }
 
   static var stages: [MigrationStage] {
-    [migrateV1toV2, migrateV2toV3]
+    [migrateV1toV2, migrateV2toV3, migrateV3toV4]
   }
 
   static let migrateV1toV2 = MigrationStage.custom(
@@ -51,6 +61,7 @@ enum MigrationPlan: SchemaMigrationPlan {
   )
 
   static let migrateV2toV3 = MigrationStage.lightweight(fromVersion: SchemaV2.self, toVersion: SchemaV3.self)
+  static let migrateV3toV4 = MigrationStage.lightweight(fromVersion: SchemaV3.self, toVersion: SchemaV4.self)
 }
 
 enum ModelError: LocalizedError {
@@ -58,7 +69,7 @@ enum ModelError: LocalizedError {
 }
 
 func setupModelContainer(
-  for versionedSchema: VersionedSchema.Type = SchemaV3.self, url: URL? = nil
+  for versionedSchema: VersionedSchema.Type = SchemaLatest.self, url: URL? = nil
 ) throws -> ModelContainer {
   do {
     let schema = Schema(versionedSchema: versionedSchema)
@@ -79,7 +90,7 @@ func setupModelContainer(
 
 @MainActor
 func setupPreviewModelContainer () -> ModelContainer {
-  let schema = Schema(versionedSchema: SchemaV3.self)
+  let schema = Schema(versionedSchema: SchemaLatest.self)
   let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
   let container = try! ModelContainer(for: schema, configurations: config)
   for item in testJournalItems {

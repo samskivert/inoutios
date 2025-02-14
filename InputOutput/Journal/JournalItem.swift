@@ -1,7 +1,10 @@
 import Foundation
 import SwiftData
 
-extension SchemaV3 {
+typealias JournalEntry = SchemaLatest.JournalEntry
+typealias JournalItem = SchemaLatest.JournalItem
+
+extension SchemaV4 {
   struct JournalEntry: Codable, Identifiable {
     var id = UUID()  // so SwiftUI can keep track of this in memory
     var text: String
@@ -92,6 +95,11 @@ extension SchemaV3 {
   }
 }
 
+extension SchemaV3 {
+  typealias JournalEntry = SchemaV4.JournalEntry
+  typealias JournalItem = SchemaV4.JournalItem
+}
+
 extension SchemaV2 {
   typealias JournalEntry = SchemaV3.JournalEntry
 
@@ -105,24 +113,12 @@ extension SchemaV2 {
     var entries: [JournalEntry] = []
     var keywords :String = ""
 
-    init(
-      id: UUID = UUID(),
-      year: Int,
-      month: Int,
-      day: Int,
-      entries: [JournalEntry] = []
-    ) {
-      self.id = id
-      self.year = year
-      self.month = month
-      self.day = day
-      self.entries = entries
-    }
+    init() {}
   }
 }
 
 extension SchemaV1 {
-  typealias JournalEntry = SchemaV3.JournalEntry
+  typealias JournalEntry = SchemaV2.JournalEntry
 
   @Model
   class JournalItem: Identifiable {
@@ -132,24 +128,9 @@ extension SchemaV1 {
     var day: Int = 1
     var entries: [JournalEntry] = []
     
-    init(
-      id: UUID = UUID(),
-      year: Int,
-      month: Int,
-      day: Int,
-      entries: [JournalEntry] = []
-    ) {
-      self.id = id
-      self.year = year
-      self.month = month
-      self.day = day
-      self.entries = entries
-    }
+    init() {}
   }
 }
-
-typealias JournalEntry = SchemaV3.JournalEntry
-typealias JournalItem = SchemaV3.JournalItem
 
 func toWhen(_ year :Int, _ month :Int, _ day :Int) -> Int { year * 10000 + month * 100 + day }
 
