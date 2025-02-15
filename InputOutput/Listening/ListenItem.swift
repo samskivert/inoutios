@@ -59,6 +59,7 @@ extension SchemaV4 {
       link: String? = nil,
       started: Date? = nil,
       completed: Date? = nil,
+      notes: String? = nil,
       rating: Rating = .none,
       recommender: String? = nil,
       format: ListenType,
@@ -72,6 +73,7 @@ extension SchemaV4 {
       self.link = link
       self.started = started
       self.completed = completed
+      self.notes = notes
       self.rating = rating
       self.recommender = recommender
       self.format = format
@@ -118,6 +120,7 @@ var testListenItems: [ListenItem] {
       title: "Steven Pinker: AI in the Age of Reason", artist: "Lex Fridman"),
     ListenItem(
       created: .now.addingTimeInterval(-50), started: .now.addingTimeInterval(-20), completed: .now,
+      notes: "This has been much more helpful for my consulting career than my Field Guide to North American Finches.",
       rating: .good, format: .podcast, title: "Field Guide to Living with Guts and Confidence", artist: "Michael Shermer"),
   ]
 }

@@ -56,14 +56,31 @@ func itemStatus (_ item :Item) -> AnyView {
 
 struct ItemRow: View {
   var item :Consumable
+  @State var showNotes :Bool = false
 
   var body: some View {
-    HStack {
-      icon(item.icon)
-      itemInfo(item.title, item.subtitle, item.recommender)
-      linkButton(item.link)
-      if let extraIcon = item.extraIcon { icon(extraIcon) }
-      itemStatus(item)
+      HStack {
+        icon(item.icon)
+        VStack(alignment: .leading) {
+          HStack {
+            itemInfo(item.title, item.subtitle, item.recommender)
+            if item.notes != nil {
+              Button(action: {
+                showNotes.toggle()
+              }) {
+                Image(systemName: showNotes ? "note.text" : "note").resizable().frame(width: 16, height: 16)
+              }.buttonStyle(PlainButtonStyle()).padding(4)
+            }
+            linkButton(item.link)
+            if let extraIcon = item.extraIcon { icon(extraIcon) }
+            itemStatus(item)
+          }
+          if showNotes {
+            if let notes = item.notes {
+              Text(notes).multilineTextAlignment(.leading)
+            }
+          }
+        }.frame(maxWidth: .infinity, alignment: .leading)
     }
   }
 }
@@ -80,4 +97,8 @@ func itemSection<T, D>(
       }
     }
   }
+}
+
+#Preview {
+  ItemRow(item: testListenItems[4]).padding()
 }
